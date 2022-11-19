@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
+<!--멤버 sql문-->
 <mapper namespace="com.ask.ask_project.mapper.BoardMapper">
 
     <!-- 로그인 체크 -->
@@ -8,5 +8,9 @@
         SELECT COUNT(*) FROM ask.member_info WHERE id = #{id} AND pw = #{pw};
     </select>
 
-
+    <!--회원가입-->
+    <insert id="insert_memberInfo" parameterType="MemberDTO" >
+        insert into member_info(id, pw, name, email)
+        values (#{id}, #{pw}, #{name}, #{email})
+    </insert>
 </mapper>

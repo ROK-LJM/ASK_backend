@@ -13,7 +13,7 @@ public class BoardController {
 
     @Autowired
     private BoardService boardService;
-
+    //로그인
     @RequestMapping("login")
     public boolean login(@RequestBody MemberDTO memberDTO) {
         int loginCheck = 0;
@@ -22,6 +22,21 @@ public class BoardController {
             if(loginCheck == 1){
                 return true;
             }else{
+                return false;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+    //회원가입
+    @RequestMapping("joinProcess")
+    public boolean joinProcess(@RequestBody MemberDTO memberDTO){
+        try{
+            int check = boardService.insert_memberInfo(memberDTO);
+            if(check == 1){
+                return true;
+            }else {
                 return false;
             }
         }catch (Exception e){

@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper>
+<mapper namespace="com.ask.ask_project.mapper.BoardMapper">
+
+    <!-- 로그인 체크 -->
+    <select id="loginCheck" parameterType="MemberDTO" resultType="int">
+        SELECT COUNT(*) FROM ask.member_info WHERE id = #{id} AND pw = #{pw};
+    </select>
+
 
 </mapper>

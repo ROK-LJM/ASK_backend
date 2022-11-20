@@ -19,7 +19,6 @@
                 <property name="password" value="Woans6592"/>
             </dataSource>
         </environment>
-
     </environments>
 
     <mappers>
@@ -27,5 +26,5 @@
     </mappers>
 
 
-
 </configuration>
+

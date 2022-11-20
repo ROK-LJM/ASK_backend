@@ -1,0 +1,117 @@
+# https://www.toptal.com/developers/gitignore/api/intellij에 의해 생성됨
+# https://www.toptal.com/developers/gitignore?templates=intellij에서 편집
+
+### 인텔리제이 ###
+# JetBrains IDE 포함: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm 및 Rider
+# 참조: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+
+# 사용자별 항목
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/사전
+.idea/**/선반
+
+# AWS 사용자별
+.idea/**/aws.xml
+
+# 생성된 파일
+.idea/**/contentModel.xml
+
+# 민감하거나 변동률이 높은 파일
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+
+# 그레이들
+.idea/**/gradle.xml
+.idea/**/라이브러리
+
+# 자동 가져오기 기능이 있는 Gradle 및 Maven
+# 자동 가져오기로 Gradle 또는 Maven을 사용할 때 모듈 파일을 제외해야 합니다.
+# 다시 생성되어 변동이 발생할 수 있기 때문입니다. 사용하는 경우 주석 해제
+# 자동 가져오기.
+# .아이디어/아티팩트
+# .idea/compiler.xml
+# .idea/jarRepositories.xml
+# .idea/modules.xml
+# .idea/*.iml
+# .아이디어/모듈
+# *.iml
+# *.ipr
+
+# 씨메이크
+cmake-빌드-*/
+
+# 몽고 익스플로러 플러그인
+.idea/**/mongoSettings.xml
+
+# 파일 기반 프로젝트 형식
+*.iws
+
+# 인텔리제이
+밖으로/
+
+# mpeltonen/sbt-idea 플러그인
+.idea_modules/
+
+# 지라 플러그인
+atlassian-ide-plugin.xml
+
+# 필기체 클로저 플러그인
+.idea/replstate.xml
+
+# SonarLint 플러그인
+.idea/sonarlint/
+
+# Crashlytics 플러그인(Android Studio 및 IntelliJ용)
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+# 에디터 기반 레스트 클라이언트
+.idea/http요청
+
+# 안드로이드 스튜디오 3.1+ 직렬화 캐시 파일
+.idea/caches/build_file_checksums.ser
+
+### Intellij 패치 ###
+# 댓글 이유: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-215987721
+
+# *.iml
+# 모듈.xml
+# .idea/misc.xml
+# *.ipr
+
+# 소날린트 플러그인
+# https://plugins.jetbrains.com/plugin/7973-sonarlint
+.idea/**/sonarlint/
+
+# SonarQube 플러그인
+# https://plugins.jetbrains.com/plugin/7238-sonarqube-community-plugin
+.idea/**/sonarIssues.xml
+
+# 마크다운 내비게이터 플러그인
+# https://plugins.jetbrains.com/plugin/7896-markdown-navigator-enhanced
+.idea/**/markdown-navigator.xml
+.idea/**/markdown-navigator-enh.xml
+.idea/**/markdown-navigator/
+
+# 캐시 파일 생성 버그
+# https://youtrack.jetbrains.com/issue/JBR-2257 참조
+.idea/$CACHE_FILE$
+
+# CodeStream 플러그인
+# https://plugins.jetbrains.com/plugin/12206-codestream
+.idea/codestream.xml
+
+# IntelliJ 플러그인용 Azure 도구 키트
+# https://plugins.jetbrains.com/plugin/8053-azure-toolkit-for-intellij
+.idea/**/azureSettings.xml
+
+# https://www.toptal.com/developers/gitignore/api/intellij 끝

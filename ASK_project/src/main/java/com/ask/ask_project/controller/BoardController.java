@@ -22,11 +22,12 @@ public class BoardController {
     @RequestMapping("login")
     public boolean login(@RequestBody MemberDTO memberDTO) {
         System.out.println("==================================");
-        System.out.println("들어온 memberDTO값: " + memberDTO);
+        System.out.println("[ 로그인 ] 들어온 memberDTO값: " + memberDTO);
         System.out.println("==================================");
         int loginCheck = 0;
         try {
             loginCheck = boardService.loginCheck(memberDTO);
+            System.out.println("[ 로그인 ] 결과값 loginCheck : " + loginCheck);
             if(loginCheck == 1){
                 return true;
             }else{
@@ -44,6 +45,7 @@ public class BoardController {
         System.out.println("[ 회원가입 ] 들어온 data : " + memberDTO);
         try{
             int check = boardService.insert_memberInfo(memberDTO);
+            System.out.println("[ 회원가입 ] 결과값 check : " + check);
             if(check == 1){
                 return true;
             }else {

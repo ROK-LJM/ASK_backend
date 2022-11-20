@@ -45,6 +45,7 @@ public class BoardController {
         System.out.println("[ 회원가입 ] 들어온 data : " + memberDTO);
         try{
             int check = boardService.insert_memberInfo(memberDTO);
+            System.out.println("[ 회원가입 ] 결과값 check : " + check);
             if(check == 1){
                 return true;
             }else {

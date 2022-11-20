@@ -2,13 +2,19 @@
 <!DOCTYPE configuration PUBLIC "//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd" >
 
 <configuration>
+
+    <typeAliases>
+        <typeAlias type="com.ask.ask_project.DTO" alias="MemberDTO"/>
+        <typeAlias type="com.ask.ask_project.DTO" alias="CompanyDTO"/>
+    </typeAliases>
+
     <environments default="development">
         <!-- environment id를 구분하여 연결할 DB를 여려개 구성할 수 도 있음 -->
-        <environment id="DB_01">
+        <environment id="development">
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
                 <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
-                <property name="url" value="jdbc:mysql://awseb-e-6wfnfpk2km-stack-awsebrdsdatabase-nsu627vle0u2.cwweggps4mkz.ap-northeast-2.rds.amazonaws.com:3306/ASK_DB"/>
+                <property name="url" value="jdbc:mysql://awseb-e-6wfnfpk2km-stack-awsebrdsdatabase-nsu627vle0u2.cwweggps4mkz.ap-northeast-2.rds.amazonaws.com:3306/ask"/>
                 <property name="username" value="ASK"/>
                 <property name="password" value="Woans6592"/>
             </dataSource>
@@ -17,6 +23,9 @@
     </environments>
 
     <mappers>
-        <mapper resource="/mapper/board/board_SQL.xml"/>
+        <mapper resource="/mapper_board/board_SQL.xml"/>
     </mappers>
+
+
+
 </configuration>

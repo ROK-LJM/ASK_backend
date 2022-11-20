@@ -10,7 +10,18 @@
 
     <!--회원가입-->
     <insert id="insert_memberInfo" parameterType="MemberDTO" >
-        insert into member_info(id, pw, name, email)
+        insert into ask.member_info(id, pw, name, email)
         values (#{id}, #{pw}, #{name}, #{email})
     </insert>
+
+    <!--사용자관리 (create) -->
+    <insert id="createUser" parameterType="UserDTO">
+        insert into ask.user_info(uId, uPw, uName, uGrant)
+        values (#{uId}, #{uPw}, #{uName}, #{uGrant})
+    </insert>
+    <!--사용자관리 (read) -->
+    <select id="readUser" parameterType="com.ask.ask_project.DTO.UserDTO" resultType="com.ask.ask_project.DTO.UserDTO">
+        select * from ask.user_info
+    </select>
+
 </mapper>

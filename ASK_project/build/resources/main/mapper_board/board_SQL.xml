@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--멤버 sql문-->
+<mapper namespace="com.ask.ask_project.mapper.BoardMapper">
+
+    <!-- 로그인 체크 -->
+    <select id="loginCheck" parameterType="userDTO" resultType="int">
+        SELECT COUNT(*) FROM ask.user_info WHERE uId = #{id} AND uPw = #{pw} AND uGrant = 1;
+    </select>
+
+    <!--회원가입-->
+    <insert id="insert_memberInfo" parameterType="memberDTO">
+        INSERT INTO ask.member_info(id, pw, name, email) values (#{id}, #{pw}, #{name}, #{email});
+    </insert>
+
+    <insert id="insert_userInfo" parameterType="memberDTO">
+        INSERT INTO ask.user_info(compCode, uId, uPw, uName) values (#{id}, #{id}, #{pw}, #{name});
+    </insert>
+
+    <!-- 회원가입 - 아이디 중복 체크 -->
+    <select id="checkId" parameterType="String" resultType="int">
+        SELECT count(*) FROM ask.member_info WHERE id = #{id};
+    </select>
+
+
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 회사 설정 > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!-- 회사 설정 - 자회사 정보 등록 -->
+    <insert id="createCompany" parameterType="companyDTO">
+        INSERT INTO ask.company_info(compNum, compName, compCEO, compAddress, compType, compItems, compEmail, id)
+        values (#{compNum}, #{compName}, #{compCEO}, #{compAddress}, #{compType}, #{compItems}, #{compEmail}, #{id});
+    </insert>
+
+    <!-- 회사 설정 - 자회사 정보 불러오기 -->
+    <select id="readCompany" parameterType="companyDTO" resultType="companyDTO">
+        SELECT * FROM ask.company_info WHERE id = #{id};
+    </select>
+
+    <!-- 회사 설정 - 자회사 정보 수정 -->
+    <update id="updateCompany" parameterType="companyDTO">
+        UPDATE ask.company_info SET compNum = #{compNum}, compName = #{compName}
+                                  , compCEO = #{compCEO}, compAddress = #{compAddress}
+                                  , compType = #{compType}, compItems = #{compItems}
+                                  , compEmail = #{compEmail}
+        WHERE id = #{id};
+    </update>
+
+    <!-- 회사 설정 - 자회사 정보 삭제 -->
+    <delete id="deleteCompany" parameterType="companyDTO">
+        DELETE FROM ask.company_info WHERE id = #{id};
+    </delete>
+
+    <!--사용자관리 (create)-->
+    <insert id="createUser" parameterType="userDTO">
+        INSERT INTO ask.user_info(uId, uPw, uName, compCode, uGrant) VALUES (#{uId}, #{uPw}, #{uName}, #{compCode},#{uGrant});
+    </insert>
+    
+    <!--사용자관리 (read)-->
+    <select id="readUser" parameterType="userDTO" resultType="userDTO">
+        SELECT * FROM ask.user_info where compCode = #{compCode};
+    </select>
+
+    <!--사용자관리 (update) -->
+    <update id="updateUser" parameterType="userDTO">
+            UPDATE ask.user_info SET uId = #{uId}, uPw = #{uPw}, uName = #{uName}, uGrant = #{uGrant}
+            WHERE uId = #{uId};
+    </update>
+
+    <!--사용자관리 (delete)-->
+    <delete id="deleteUser" parameterType="userDTO">
+        DELETE FROM ask.user_info WHERE uId = #{uId};
+    </delete>
+
+    <!--마스터키-->
+    <select id="getMaster" parameterType="userDTO" resultType="String">
+        SELECT compCode FROM ask.user_info WHERE uId = #{uId}
+    </select>
+
+</mapper>

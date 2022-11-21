@@ -3,9 +3,10 @@
 <!--멤버 sql문-->
 <mapper namespace="com.ask.ask_project.mapper.BoardMapper">
 
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 로그인, 회원가입 > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
     <!-- 로그인 체크 -->
-    <select id="loginCheck" parameterType="memberDTO" resultType="int">
-        SELECT COUNT(*) FROM ask.member_info WHERE id = #{id} AND pw = #{pw};
+    <select id="loginCheck" parameterType="userDTO" resultType="int">
+        SELECT COUNT(*) FROM ask.user_info WHERE userId = #{userId} AND userPw = #{userPw} AND userGrant = 0;
     </select>
 
     <!--회원가입-->
@@ -13,16 +14,109 @@
         INSERT INTO ask.member_info(id, pw, name, email) values (#{id}, #{pw}, #{name}, #{email});
     </insert>
 
+    <!--회원가입 - 마스터를 user_info에 넣어줌 -->
+    <insert id="insert_userInfo" parameterType="memberDTO">
+        INSERT INTO ask.user_info(compCode, userId, userPw, userName) values (#{id}, #{id}, #{pw}, #{name});
+    </insert>
+
     <!-- 회원가입 - 아이디 중복 체크 -->
     <select id="checkId" parameterType="String" resultType="int">
         SELECT count(*) FROM ask.member_info WHERE id = #{id};
     </select>
 
-
-    <!-- 회사 설정 - 자회사 등록 -->
-    <insert id="createCompany" parameterType="companyDTO">
-        INSERT INTO ask.company_info(compNum, compName, compCEO, compAddress, compType, compItems, compEmail)
-        values (#{compNum}, #{compName}, #{compCEO}, #{compAddress}, #{compType}, #{compItems}, #{compEmail});
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 사용자 관리 > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!--사용자관리 (create)-->
+    <insert id="createUser" parameterType="userDTO">
+        INSERT INTO ask.user_info(userId, userPw, userName, compCode, userGrant) VALUES (#{userId}, #{userPw}, #{userName}, #{compCode}, #{userGrant});
     </insert>
 
+    <!--사용자관리 (read)-->
+    <select id="readUser" parameterType="userDTO" resultType="userDTO">
+        SELECT * FROM ask.user_info where compCode = #{compCode} AND userId NOT IN(#{compCode});
+    </select>
+
+    <!--사용자관리 (update) -->
+    <update id="updateUser" parameterType="userDTO">
+        UPDATE ask.user_info SET userId = #{userId}, userPw = #{userPw}, userName = #{userName}, userGrant = #{userGrant}
+        WHERE userId = #{userId};
+    </update>
+    <!--사용자관리 (updateModal)-->
+    <select id="updateUserModal" parameterType="userDTO" resultType="userDTO">
+        SELECT * FROM ask.user_info where compCode = #{compCode} AND userId = #{userId};
+    </select>
+
+    <!--사용자관리 (delete)-->
+    <delete id="deleteUser" parameterType="userDTO">
+        DELETE FROM ask.user_info WHERE userId = #{userId};
+    </delete>
+
+    <!--마스터키-->
+    <select id="getMaster" parameterType="userDTO" resultType="String">
+        SELECT compCode FROM ask.user_info WHERE userId = #{userId};
+    </select>
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 회사 설정 > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!-- 회사 설정 - 자회사 정보 등록 -->
+    <insert id="createCompany" parameterType="companyDTO">
+        INSERT INTO ask.company_info(compNum, compName, compCEO, compAddress, compType, compItems, compEmail, id)
+        values (#{compNum}, #{compName}, #{compCEO}, #{compAddress}, #{compType}, #{compItems}, #{compEmail}, #{id});
+    </insert>
+
+    <!-- 회사 설정 - 자회사 정보 불러오기 -->
+    <select id="readCompany" parameterType="companyDTO" resultType="companyDTO">
+        SELECT * FROM ask.company_info WHERE id = #{id};
+    </select>
+
+    <!-- 회사 설정 - 자회사 정보 수정 -->
+    <update id="updateCompany" parameterType="companyDTO">
+        UPDATE ask.company_info SET compNum = #{compNum}, compName = #{compName}
+                                  , compCEO = #{compCEO}, compAddress = #{compAddress}
+                                  , compType = #{compType}, compItems = #{compItems}
+                                  , compEmail = #{compEmail}
+        WHERE id = #{id};
+    </update>
+
+    <!-- 회사 설정 - 자회사 정보 삭제 -->
+    <delete id="deleteCompany" parameterType="companyDTO">
+        DELETE FROM ask.company_info WHERE id = #{id};
+    </delete>
+    
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ근태관리 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ-->
+    <!--휴가항목 (CREATE) -->
+    <insert id="createVactCategory" parameterType="vactCategoryDTO">
+        insert into ask.vact_category(compCode, vactCode, vactName, vactDetail)
+        VALUES (#{compCode}, #{vactCode}, #{vactName}, #{vactDetail});
+    </insert>
+    <!--휴가항목 (read)-->
+    <select id="readVactCategory" parameterType="vactCategoryDTO" resultType="vactCategoryDTO">
+        select * from ask.vact_category where compCode = #{compCode};
+    </select>
+    <!--휴가항목 (update)-->
+    <update id="updateVactCategory" parameterType="vactCategoryDTO">
+        update ask.vact_category SET vactCode = #{vactCode}, vactName = #{vactName}, vactDetail = #{vactDetail}
+        where compCode = #{compCode} AND vactCode = #{vactCode};
+    </update>
+    <!--휴가항목 (delete)-->
+    <delete id="deleteVactCategory" parameterType="String">
+        DELETE FROM ask.vact_category where vactCode = #{vactCode} AND compCode = #{compCode};
+    </delete>
+    
+    <!--휴가처리 (read)-->
+    <select id="readVactDispose" parameterType="vact_disposeDTO" resultType="vact_disposeDTO">
+        select * from ask.vact_dispose where compCode = #{compCode};
+    </select>
+
+    <!--보유휴가 현황 (read)-->
+    <insert id="insert_vaclist" parameterType="vact_listDTO">
+
+    </insert>
+
+    <select id="readVactlist" parameterType="vact_listDTO" resultType="vact_listDTO">
+        select * from ask.vact_list where compCode = #{compCode};
+    </select>
+    
+    <!--출퇴근관리 (create)-->
+    <insert id="createinOut_info" parameterType="inOut_infoDTO">
+        insert into inOut_info(compCode, inOutDate, empCode, empName, depName, inOutStart, inOutEnd, inOutOver)
+        values (#{compCode}, #{inOutDate}, #{empCode}, #{empName}, #{depName}, #{inOutStart}, #{inOutEnd}, #{inOutOver});
+    </insert>
 </mapper>

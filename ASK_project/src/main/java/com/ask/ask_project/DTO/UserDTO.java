@@ -5,9 +5,10 @@ import org.apache.ibatis.type.Alias;
 
 import java.util.ArrayList;
 
+
 //사용자관리
-@Alias("userDTO")
 @Data
+@Alias("userDTO")
 public class UserDTO {
     private String compCode;
     private String userId;

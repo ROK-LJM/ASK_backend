@@ -14,4 +14,5 @@ public class CompanyDTO {
     private String compType;
     private String compItems;
     private String compEmail;
+    private String id;
 }

@@ -146,4 +146,60 @@ public class BoardServiceImpl implements BoardService{
     public int deleteEmp(EmpDTO empDTO) throws Exception{
         return boardMapper.deleteEmp(empDTO);
     }
+
+
+
+
+
+    //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 근태관리 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+    // 휴가항목 등록 (create)
+    @Override
+    public int createVactCategory(Vact_CategoryDTO vact_categoryDTO) throws Exception {
+        return boardMapper.createVactCategory(vact_categoryDTO);
+    }
+
+    //휴가항목 등록 (read)
+    @Override
+    public List<Vact_CategoryDTO>  readVactCategory(Vact_CategoryDTO vact_categoryDTO) throws Exception {
+        return boardMapper.readVactCategory(vact_categoryDTO);
+    }
+    //휴가항목 등록 (update)
+    @Override
+    public int updateVactCategory(Vact_CategoryDTO vact_categoryDTO) throws Exception {
+        return boardMapper.updateVactCategory(vact_categoryDTO);
+    }
+
+    //휴가항목 등록 (delete)
+    @Override
+    public int deleteVactCategory(String vactCode) throws Exception {
+        return boardMapper.deleteVactCategory(vactCode);
+    }
+
+    //휴가처리 (read)
+    @Override
+    public List<Vact_disposeDTO> readVactDispose(Vact_disposeDTO vact_dispose) throws Exception {
+        return boardMapper.readVactDispose(vact_dispose);
+    }
+    //보유휴가 현황 (read)
+    @Override
+    public List<Vact_listDTO> readVactlist(Vact_listDTO vact_listDTO) throws Exception {
+        return boardMapper.readVactlist(vact_listDTO);
+    }
+    //휴가계산
+    @Override
+    public int total(Vact_disposeDTO vact_disposeDTO) throws Exception {
+        return boardMapper.total(vact_disposeDTO);
+    }
+
+    //보유휴가 테이블에 사원정보 삽입
+    @Override
+    public int insert_vaclist(Vact_listDTO vact_listDTO) throws Exception {
+        return boardMapper.insert_vaclist(vact_listDTO);
+    }
+
+    //출퇴근관리 (create)
+    @Override
+    public int createinOut_info(InOut_infoDTO inOut_infoDTO) throws Exception {
+        return boardMapper.createinOut_info(inOut_infoDTO);
+    }
 }

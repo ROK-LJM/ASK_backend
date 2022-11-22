@@ -441,4 +441,168 @@ public class BoardController {
     // 수당관리 - 수당항목 삭제(delete)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 근태관리 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+    //휴가항목 등록 (create)
+    @RequestMapping("create_Vactcategory")
+    public boolean create_vactcategory(@RequestBody Vact_CategoryDTO vact_categoryDTO){
+        System.out.println("==================================");
+        System.out.println("[ 휴가항목등록 - 휴가항목 추가 ] 들어온 vact_categoryDTO값: " + vact_categoryDTO);
+        System.out.println("==================================");
+        try {
+            int check = boardService.createVactCategory(vact_categoryDTO);
+            System.out.println("[ 휴가항목등록 - 휴가항목 추가 ] 결과값 check 값 : " + check);
+            if(check == 1){
+                return true;
+            }else{
+                return false;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    //휴가항목 등록 (read)
+    @RequestMapping("read_Vactcategory")
+    public List<Vact_CategoryDTO> read_vactcategory(@RequestBody Vact_CategoryDTO vact_categoryDTO){
+        System.out.println("==================================");
+        System.out.println("[ 휴가항목등록 - 휴가항목 리스트 ] 들어온 vact_categoryDTO값: " + vact_categoryDTO);
+        System.out.println("==================================");
+        try{
+            List<Vact_CategoryDTO> vactList = boardService.readVactCategory(vact_categoryDTO);
+            if(vactList != null){
+                return vactList;
+            }else {
+                return null;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    //휴가항목 등록 (update)
+    @RequestMapping("update_Vactcategory")
+    public boolean update_Vactcategory(@RequestBody Vact_CategoryDTO vact_categoryDTO){ //front로 휴가코드, 마스터아이디 요청
+        System.out.println("==================================");
+        System.out.println("[ 휴가항목등록 - 휴가항목 수정 ] 들어온 vact_categoryDTO값: " + vact_categoryDTO);
+        System.out.println("==================================");
+        try{
+            int check = boardService.updateVactCategory(vact_categoryDTO);
+            System.out.println("[ 휴가항목등록 - 휴가항목 수정 ] 결과값 check 값 : " + check);
+            if(check == 1){
+                return true;
+            }else{
+                return false;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    //휴가항목 등록 (delete)
+    @RequestMapping("delete_Vactcategory")  //front로 휴가코드, 마스터아이디 요청
+    public boolean delete_Vactcategory(@RequestBody Vact_CategoryDTO vact_categoryDTO){
+        System.out.println("==================================");
+        System.out.println("[ 휴가항목등록 - 휴가항목 삭제 ] 들어온 vact_categoryDTO값: " + vact_categoryDTO);
+        System.out.println("==================================");
+        try {
+            int check = 0;
+            String[] list = vact_categoryDTO.getDeleteVactCode();
+            for(int i=0;i<list.length;i++){
+                check = boardService.deleteVactCategory(list[i]);
+                System.out.println("[ 휴가항목등록 - 휴가항목 삭제 ] 결과값 check 값 : " + check);
+                if(check == 0){
+                    return false;
+                }
+            }
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    //휴가처리 create 기능은 모바일과 같이 개발
+    //휴가처리 (read)
+    @RequestMapping("read_VactDispose")
+    public List<Vact_disposeDTO> read_VactDispose(@RequestBody Vact_disposeDTO vact_dispose){
+        try {
+            System.out.println("==================================");
+            System.out.println("[ 휴가처리 ] 들어온 vact_dispose: " + vact_dispose);
+            System.out.println("==================================");
+            List<Vact_disposeDTO> VactDispose = boardService.readVactDispose(vact_dispose);
+            if(VactDispose != null){
+                return VactDispose;
+            }else{
+                return null;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    //휴가 보유현황 (read)
+    @RequestMapping("read_Vactlist")
+    public List<Vact_listDTO> read_Vactlist(@RequestBody Vact_listDTO vact_listDTO) throws Exception {
+//        Vact_disposeDTO vact_disposeDTO = new Vact_disposeDTO();
+//        boardService.total(vact_disposeDTO);
+//        boardService.insert_vaclist(vact_listDTO);
+        try{
+            System.out.println("==================================");
+            System.out.println("[ 휴가처리 ] 들어온 vact_listDTO: " + vact_listDTO);
+            System.out.println("==================================");
+            List<Vact_listDTO> vactList = boardService.readVactlist(vact_listDTO);
+            if(vactList != null){
+                return vactList;
+            }else {
+                return null;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    //출퇴근 관리
+    @RequestMapping("create_inOutInfo")
+    public boolean create_inOutInfo(@RequestBody InOut_infoDTO inOut_infoDTO) {
+        System.out.println("==================================");
+        System.out.println("[ 출퇴근관리 -  추가 ] 들어온 inOut_infoDTO: " + inOut_infoDTO);
+        System.out.println("==================================");
+        try {
+            int check = boardService.createinOut_info(inOut_infoDTO);
+            System.out.println("[ 출퇴근관리 -  추가 ] 들어온 inOut_infoDTO: " + check);
+            if (check == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+
+
+
+
+
 }

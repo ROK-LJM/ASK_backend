@@ -5,7 +5,6 @@ import org.apache.ibatis.type.Alias;
 
 import java.util.ArrayList;
 
-
 //사용자관리
 @Data
 @Alias("userDTO")

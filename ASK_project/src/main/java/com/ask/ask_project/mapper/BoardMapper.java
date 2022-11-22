@@ -76,4 +76,32 @@ public interface BoardMapper {
 
     // 사원관리 - 사원정보 삭제(delete)
     int deleteEmp(EmpDTO empDTO) throws Exception;
+
+
+
+
+    //ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 근태관리 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+    //휴가항목 등록 (create)
+    int createVactCategory(Vact_CategoryDTO vact_categoryDTO) throws Exception;
+    //휴가항목 등록 (read)
+    List<Vact_CategoryDTO> readVactCategory(Vact_CategoryDTO vact_categoryDTO) throws Exception;
+    // 휴가등록 (update)
+    int updateVactCategory(Vact_CategoryDTO vact_categoryDTO) throws Exception;
+    //휴가등록 (delete)
+    int deleteVactCategory(String vactCode) throws Exception;
+
+    //휴가처리 (read)
+    List<Vact_disposeDTO> readVactDispose(Vact_disposeDTO vact_dispose) throws Exception;
+
+    //보유휴가현황 (read)
+    List<Vact_listDTO> readVactlist(Vact_listDTO vact_listDTO) throws Exception;
+
+    //휴가 가저오기
+    int total(Vact_disposeDTO vact_disposeDTO) throws Exception;
+
+    //보유휴가 테이블에 사원정보 넣기
+    int insert_vaclist(Vact_listDTO vact_listDTO) throws Exception;
+
+    //출퇴근관리 (create)
+    int createinOut_info(InOut_infoDTO inOut_infoDTO) throws Exception;
 }

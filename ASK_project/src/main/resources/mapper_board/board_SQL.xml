@@ -135,4 +135,47 @@
         DELETE FROM ask.emp_info WHERE compCode = #{compCode} AND empNum = #{empNum};
     </delete>
 
+
+
+
+
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ근태관리 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ-->
+    <!--휴가항목 (CREATE) -->
+    <insert id="createVactCategory" parameterType="vactCategoryDTO">
+        insert into ask.vact_category(compCode, vactCode, vactName, vactDetail)
+        VALUES (#{compCode}, #{vactCode}, #{vactName}, #{vactDetail});
+    </insert>
+    <!--휴가항목 (read)-->
+    <select id="readVactCategory" parameterType="vactCategoryDTO" resultType="vactCategoryDTO">
+        select * from ask.vact_category where compCode = #{compCode};
+    </select>
+    <!--휴가항목 (update)-->
+    <update id="updateVactCategory" parameterType="vactCategoryDTO">
+        update ask.vact_category SET vactCode = #{vactCode}, vactName = #{vactName}, vactDetail = #{vactDetail}
+        where compCode = #{compCode} AND vactCode = #{vactCode};
+    </update>
+    <!--휴가항목 (delete)-->
+    <delete id="deleteVactCategory" parameterType="String">
+        DELETE FROM ask.vact_category where vactCode = #{vactCode} AND compCode = #{compCode};
+    </delete>
+
+    <!--휴가처리 (read)-->
+    <select id="readVactDispose" parameterType="vact_disposeDTO" resultType="vact_disposeDTO">
+        select * from ask.vact_dispose where compCode = #{compCode};
+    </select>
+
+    <!--보유휴가 현황 (read)-->
+    <insert id="insert_vaclist" parameterType="vact_listDTO">
+
+    </insert>
+
+    <select id="readVactlist" parameterType="vact_listDTO" resultType="vact_listDTO">
+        select * from ask.vact_list where compCode = #{compCode};
+    </select>
+
+    <!--출퇴근관리 (create)-->
+    <insert id="createinOut_info" parameterType="inOut_infoDTO">
+        insert into inOut_info(compCode, inOutDate, empCode, empName, depName, inOutStart, inOutEnd, inOutOver)
+        values (#{compCode}, #{inOutDate}, #{empCode}, #{empName}, #{depName}, #{inOutStart}, #{inOutEnd}, #{inOutOver});
+    </insert>
 </mapper>

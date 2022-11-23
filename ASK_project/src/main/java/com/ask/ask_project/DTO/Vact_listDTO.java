@@ -16,5 +16,4 @@ public class Vact_listDTO {
      private int totalVacation;
      private int takeVacation;
      private int remindVacation;
-
 }

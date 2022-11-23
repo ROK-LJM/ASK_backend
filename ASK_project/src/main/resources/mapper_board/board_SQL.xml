@@ -56,6 +56,31 @@
         SELECT * FROM ask.user_info where compCode = #{compCode} AND userId = #{userId};
     </select>
 
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 모바일 관리 > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!-- 모바일관리 - 모바일계정 정보 등록(create) -->
+    <insert id="createMobile" parameterType="mbUserDTO">
+        INSERT INTO ask.mbUser_info(compCode, mb_id, mb_pw, mb_code, mb_name) VALUES(#{compCode}, #{mb_id}, #{mb_pw}, #{mb_code}, #{mb_name});
+    </insert>
+    <!-- 모바일관리 - 모바일계정 정보 불러오기(read) -->
+    <select id="readMobile" parameterType="mbUserDTO" resultType="mbUserDTO">
+        SELECT * FROM ask.mbUser_info WHERE compCode = #{compCode};
+    </select>
+
+    <!-- 모바일관리 - 모바일계정 정보 수정(update) -->
+    <update id="updateMobile" parameterType="mbUserDTO">
+        UPDATE ask.mbUser_info SET mb_id=#{mb_id}, mb_pw=#{mb_pw}, mb_code=#{mb_code}, mb_name=#{mb_name}
+        WHERE mb_id = #{preMobileId};
+    </update>
+    <!-- 모바일관리 - 모바일계정 정보 수정 - 모달 창에 업데이트 할 값 보내기 -->
+    <select id="updateMobileModal" parameterType="mbUserDTO" resultType="mbUserDTO">
+        SELECT * FROM ask.mbUser_info where mb_id = #{mb_id};
+    </select>
+
+    <!-- 모바일관리 - 모바일계정 정보 등록(delete) -->
+    <delete id="deleteMobile" parameterType="String">
+        DELETE FROM ask.mbUser_info WHERE mb_id = #{mb_id}
+    </delete>
+
     <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 회사 설정 > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
     <!-- 회사 설정 - 자회사 정보 등록 -->
     <insert id="createCompany" parameterType="companyDTO">
@@ -116,7 +141,7 @@
     
     <!-- 사원관리 - 사원정보 불어오기(read) -->
     <select id="readEmp" parameterType="empDTO" resultType="empDTO">
-        SELECT * FROM ask.emp_info WHERE compCode = ${compCode};
+        SELECT * FROM ask.emp_info WHERE compCode = #{compCode};
     </select>
     
     <!-- 사원관리 - 사원정보 수정(update) -->
@@ -128,15 +153,76 @@
                                 remindVacation=#{remindVacation}, empEndReason=#{empEndReason},
                                 bankName=#{bankName}, bankNum=#{bankNum}, bankOwner=#{bankOwner}, empFamilyNum=#{empFamilyNum},
                                 empPay=#{empPay}, empAddress=#{empAddress}, empPhoto=#{empPhoto}, empResume=#{empResume}
+                            WHERE empId=#{empId};
     </update>
+    <!-- 사원관리 - 사원항목 모달 -->
+    <select id="updateEmpModal" parameterType="empDTO" resultType="empDTO">
+        SELECT * FROM ask.emp_info WHERE empId = #{empId}
+    </select>
+
 
     <!-- 사원관리 - 사원정보 삭제(delete) -->
     <delete id="deleteEmp" parameterType="empDTO">
-        DELETE FROM ask.emp_info WHERE compCode = #{compCode} AND empNum = #{empNum};
+        DELETE FROM ask.emp_info WHERE empId = #{empId};
     </delete>
 
 
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 수당관리 > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!-- CRUD (create, read, update, delete) -->
+    <!-- 수당관리 - 수당항목 등록(create) -->
+    <insert id="createEmpPay" parameterType="emp_payDTO">
+        INSERT INTO ask.emp_pay(compCode, payCode, payName, taxFreeCode, taxFreeName, payType, payCalc)
+        values(#{compCode}, #{payCode}, #{payName}, #{taxFreeCode}, #{taxFreeName}, #{payType}, #{payCalc})
+    </insert>
 
+    <!-- 수당관리 - 수당항목 불러오기(read) -->
+    <select id="readEmpPay" parameterType="emp_payDTO" resultType="emp_payDTO">
+        SELECT * FROM ask.emp_pay WHERE compCode = #{compCode};
+    </select>
+
+    <!-- 수당관리 - 수당항목 수정(update) -->
+    <update id="updateEmpPay" parameterType="emp_payDTO">
+        UPDATE ask.emp_pay SET compCode = #{compCode}, payCode = #{payCode}, payName = #{payName}, taxFreeName = #{taxFreeName}, payType = #{payType}, payCalc = #{payCalc}
+        WHERE empPayID = ${empPayID};
+    </update>
+    <!-- 수당관리 - 수당항목 모달 -->
+    <select id="updateEmpPayModal" parameterType="emp_payDTO" resultType="emp_payDTO">
+        SELECT * FROM ask.emp_pay WHERE empPayID = #{empPayID};
+    </select>
+    
+
+    <!-- 수당관리 - 수당항목 삭제(delete) -->
+    <delete id="deleteEmpPay" parameterType="String">
+        DELETE FROM ask.emp_pay WHERE empPayID = #{empPayID};
+    </delete>
+
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 세금관리 > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!-- CRUD (create, read, update, delete) -->
+    <!-- 세금관리 - 수당항목 등록(create) -->
+    <insert id="createTax" parameterType="taxDTO">
+        INSERT INTO ask.tax_info(compCode, taxCode, taxName, taxItem, taxNote)
+        VALUES(compCode=#{compCode}, taxCode=#{taxCode}, taxName=#{taxName}, taxItem=#{taxItem},taxNote=#{taxNote});
+    </insert>
+
+    <!-- 세금관리 - 세금정보 불러오기(read) -->
+    <select id="readTax" parameterType="taxDTO" resultType="taxDTO">
+        SELECT * FROM ask.tax_info WHERE compCode = #{compCode};
+    </select>
+
+    <!-- 세금관리 - 세금정보 수정(update) -->
+    <update id="updateTax" parameterType="taxDTO">
+        UPDATE ask.tax_info SET compCode=#{compCode}, taxCode=#{taxCode}, taxName=#{taxName}, taxItem=#{taxItem}, taxNote=#{taxNote}
+        WHERE taxInfoId = #{taxInfoId};
+    </update>
+    <!-- 세금관리 - 세금정보 수정모달 -->
+    <select id="updateTaxModal" parameterType="String">
+        SELECT * FROM ask.tax_info WHERE taxInfoId = #{taxInfoId};
+    </select>
+
+    <!-- 세금관리 - 세금정보 삭제(delete) -->
+    <delete id="deleteTax" parameterType="String">
+        DELETE FROM ask.tax_info WHERE taxInfoId = #{taxInfoId};
+    </delete>
 
 
     <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ근태관리 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ-->
@@ -152,30 +238,148 @@
     <!--휴가항목 (update)-->
     <update id="updateVactCategory" parameterType="vactCategoryDTO">
         update ask.vact_category SET vactCode = #{vactCode}, vactName = #{vactName}, vactDetail = #{vactDetail}
-        where compCode = #{compCode} AND vactCode = #{vactCode};
+        where compCode = #{compCode} AND vactNameListId = #{vactNameListId};
     </update>
     <!--휴가항목 (delete)-->
-    <delete id="deleteVactCategory" parameterType="String">
-        DELETE FROM ask.vact_category where vactCode = #{vactCode} AND compCode = #{compCode};
+    <delete id="deleteVactCategory" parameterType="int">
+        DELETE FROM ask.vact_category where compCode = #{compCode} AND vactNameListId = #{vactNameListId};
     </delete>
-
+    <!--휴가처리 (create) -->
+    <insert id="createVactDispose" parameterType="vact_disposeDTO">
+        insert into ask.vact_dispose(compCode, vactStartDate, vactEndDate, empName, depName, vactPeriod, vactName, vactDetail, vactNote)
+        values (#{compCode}, #{vactStartDate}, #{vactEndDate}, #{empName}, #{depName}, #{vactPeriod}, #{vactName}, #{vactDetail}, #{vactNote});
+    </insert>
+    <!--휴가처리 ( 잔여휴가 예외처리 )-->
+    <select id="VactDispose" parameterType="vact_disposeDTO" resultType="int">
+        select remindVacation from emp_info where compCode = #{compCode} and empName = #{empName} and depName = #{depName};
+    </select>
     <!--휴가처리 (read)-->
     <select id="readVactDispose" parameterType="vact_disposeDTO" resultType="vact_disposeDTO">
         select * from ask.vact_dispose where compCode = #{compCode};
     </select>
+    <!--휴가처리 (update) 권한 승인-->
+    <update id="updateVactDispose" parameterType="vact_disposeDTO">
+        update ask.vact_dispose set vactState = #{vactState} where compCode = #{compCode} and disposeVactListId = #{disposeVactListId};
+    </update>
+    <!--보유휴가 현황 ( 잔여휴가 업데이트 )-->
+    <update id="updateRemindVact">
+        update ask.emp_info set takeVacation =takeVacation + (select vactPeriod from vact_dispose where emp_info.empName = vact_dispose.empName and emp_info.empNum = vact_dispose.empNum and vact_dispose.vactState='승인'),
+                                remindVacation = totalVacation-ifnull(takeVacation, 0);
+    </update>
 
-    <!--보유휴가 현황 (read)-->
-    <insert id="insert_vaclist" parameterType="vact_listDTO">
-
-    </insert>
-
-    <select id="readVactlist" parameterType="vact_listDTO" resultType="vact_listDTO">
-        select * from ask.vact_list where compCode = #{compCode};
+    <!--보유휴가현황 (read)-->
+    <select id="readVactlist" parameterType="empDTO" resultType="empDTO">
+        select * from ask.emp_info where compCode = #{compCode};
     </select>
+
+    <!--보유휴가현황 (update) -->
+    <update id="updateVactlist" parameterType="empDTO">
+        update ask.emp_info SET totalVacation = #{totalVacation}
+        where compCode = #{compCode} and empName = #{empName} and empNum = #{empNum};
+    </update>
 
     <!--출퇴근관리 (create)-->
     <insert id="createinOut_info" parameterType="inOut_infoDTO">
-        insert into inOut_info(compCode, inOutDate, empCode, empName, depName, inOutStart, inOutEnd, inOutOver)
+        insert into ask.inOut_info(compCode, inOutDate, empCode, empName, depName, inOutStart, inOutEnd, inOutOver)
         values (#{compCode}, #{inOutDate}, #{empCode}, #{empName}, #{depName}, #{inOutStart}, #{inOutEnd}, #{inOutOver});
     </insert>
+
+    <!--출퇴근관리 (read)-->
+    <select id="readinout_info" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
+        select * from ask.inOut_info where compCode = #{compCode};
+    </select>
+
+    <!--출퇴근 관리 (update)-->
+    <update id="updateinOut_info" parameterType="inOut_infoDTO">
+        update ask.inOut_info set inOutDate = #{inOutDate}, empCode = #{empCode}, empName = #{empName}, depName = #{depName},
+                                  inOutStart = #{inOutStart}, inOutEnd = #{inOutEnd}, inOutOver = #{inOutOver}
+        where compCode = #{compCode} and inOutListId = #{inOutListId};
+    </update>
+    <!--출퇴근관리 (delete)-->
+    <!--pk를 주고 삭제하게 다시 생각할것-->
+    <delete id="deleteinOut_info" parameterType="int">
+        delete from ask.inOut_info where compCode = #{compCode} and inOutListId = #{inOutListId};
+    </delete>
+    <!--출퇴근 관리 (search)-->
+    <select id="searchInout" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
+        select * from ask.inOut_info
+        where empName = #{empName} and compCode = #{compCode} and inOutDate between date (#{startDate}) and (#{endDate});
+    </select>
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 일용직관리[일용직등록] > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!-- 일용직관리[일용직등록] - 일용직정보 등록(create) -->
+    <insert id="createDailyEmp" parameterType="dailyEmpDTO">
+        INSERT INTO ask.daily_EMP(compCode, d_code, d_name, depCode, d_address, d_ssn, d_phone, d_bankName, d_bankNum, d_bankOwner, d_start, d_pay)
+        VALUES(#{compCode}, #{d_code}, #{d_name}, #{depCode}, #{d_address}, #{d_ssn}, #{d_phone}, #{d_bankName}, #{d_bankNum}, #{d_bankOwner}, #{d_start}, #{d_pay});
+    </insert>
+
+    <!-- 일용직관리[일용직등록] - 일용직정보 불러오기(read) -->
+    <select id="readDailyEmp" parameterType="dailyEmpDTO" resultType="dailyEmpDTO">
+        SELECT * FROM ask.daily_EMP WHERE compCode = #{compCode};
+    </select>
+
+    <!-- 일용직관리[일용직등록] - 일용직정보 수정(update) -->
+    <update id="updateDailyEmp" parameterType="dailyEmpDTO">
+        UPDATE ask.daily_EMP SET compCode=#{compCode}, d_code=#{d_code}, d_name=#{d_name}, depCode=#{depCode}, d_address=#{d_address}, d_ssn=#{d_ssn}, d_phone=#{d_phone},
+                                 d_bankName=#{d_bankName}, d_bankNum=#{d_bankNum}, d_bankOwner=#{d_bankOwner}, d_start=#{d_start}, d_pay=#{d_pay};
+    </update>
+
+    <!-- 일용직관리[일용직등록] - 일용직정보 수정 모달 -->
+    <select id="updateDailyEmpModal" parameterType="dailyEmpDTO" resultType="dailyEmpDTO">
+        SELECT * FROM ask.daily_EMP WHERE dailyId = #{dailyId};
+    </select>
+
+    <!-- 일용직관리[일용직등록] - 일용직정보 삭제(delete)-->
+    <delete id="deleteDailyEmp" parameterType="dailyEmpDTO">
+        DELETE FROM ask.daily_EMP WHERE dailyId = #{dailyId};
+    </delete>
+
+
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 일용직관리[일용직수당] > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!-- 일용직관리[일용직 수당] - 일용직수당 등록(create) -->
+    <insert id="createDailyPay" parameterType="dailyEmpPayDTO">
+        INSERT INTO ask.daily_pay(compCode, d_payCode, d_payName, d_taxFreeCode, d_taxFreeName, d_taxFreeType, d_taxFreeCalc)
+        VALUES(#{compCode}, #{d_payCode}, #{d_payName}, #{d_taxFreeCode}, #{d_taxFreeName}, #{d_taxFreeType}, #{d_taxFreeCalc});
+    </insert>
+
+    <!-- 일용직관리[일용직수당] - 일용직수당 불러오기(read) -->
+    <select id="readDailyPay" parameterType="dailyEmpPayDTO" resultType="dailyEmpPayDTO">
+        SELECT * FROM ask.daily_pay WHERE compCode = #{compCode};
+    </select>
+
+    <!-- 일용직관리[일용직수당] - 일용직수당 수정(update) -->
+    <update id="updateDailyPay" parameterType="dailyEmpPayDTO">
+        UPDATE ask.daily_pay SET compCode=#{compCode}, d_payCode=#{d_payCode}, d_payName=#{d_payName}, d_taxFreeCode=#{d_taxFreeCode}, d_taxFreeName=#{d_taxFreeName},
+                                 d_taxFreeType=#{d_taxFreeType}, d_taxFreeCalc=#{d_taxFreeCalc};
+    </update>
+
+    <!-- 일용직관리[일용직수당] - 일용직수당 수정 모달 -->
+    <select id="updateDailyPayModal" parameterType="dailyEmpPayDTO" resultType="dailyEmpPayDTO">
+        SELECT * FROM ask.daily_pay WHERE d_payId = #{d_payId};
+    </select>
+
+    <!-- 일용직관리[일용직수당] - 일용직수당 삭제(delete)-->
+    <delete id="deleteDailyPay" parameterType="dailyEmpPayDTO">
+        DELETE FROM ask.daily_pay WHERE d_payId = #{d_payId};
+    </delete>
+
+
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 일용직관리[출퇴근 관리] > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!-- 일용직관리[출퇴근관리] - 일용직 정보 가져오기(read) - 아마도 기존의 일용직 정보를 그대로 가져가도 될듯? 실험해보세요 -->
+    <select id="searchDailyEmp" parameterType="dailyEmpDTO" resultType="dailyEmpDTO">
+        SELECT * FROM ask.daily_EMP WHERE dailyId = #{dailyId};
+    </select>
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ   -->
+    <!-- 일용직관리[출퇴근관리] - 일용직 출퇴근정보 등록(create) -->
+
+
+    <!-- 일용직관리[출퇴근관리] - 일용직 출퇴근정보 불러오기(read) -->
+
+
+    <!-- 일용직관리[출퇴근관리] - 일용직 출퇴근정보 수정(update) -->
+
+
+    <!-- 일용직관리[출퇴근관리] - 일용직 출퇴근정보 모달(modal) -->
+
+    <!-- 일용직관리[출퇴근관리] - 일용직 출퇴근정보 삭제(delete) -->
+
 </mapper>

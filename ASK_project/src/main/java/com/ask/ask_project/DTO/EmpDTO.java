@@ -7,6 +7,7 @@ import org.apache.ibatis.type.Alias;
 @Alias("empDTO")
 @Data
 public class EmpDTO {
+    private int empId;              //사원리스트ID
     private String compCode;        //회사코드
     private String empName;         //사원명
     private String empNum;          //사원번호
@@ -28,5 +29,17 @@ public class EmpDTO {
     private int empPay;             //기본급여
     private String empAddress;      //주소
     private String empPhoto;        //사진 ( 경로 )
-    private String empResume;       //이력서 ( 경로 )\
+    private String empResume;       //이력서 ( 경로 )
+    private int takeVacation; // 사용휴가
+
+
+    // DB에 저장 혹은 로드하는건 아니지만, 서버에서 처리해야할 데이터
+    private String empFirstSSN;     // 주민번호(앞)
+    private String empSecondSSN;    // 주민번호(뒤)
+    private String empStartYear;    // 입사일(year)
+    private String empStartMonth;   // 입사일(month)
+    private String empStartDay;     // 입사일(day)
+    private String empEndYear;      // 퇴사일(year)
+    private String empEndMonth;     // 퇴사일(month)
+    private String empEndDay;       // 퇴사일(day)
 }

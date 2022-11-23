@@ -8,7 +8,9 @@ import org.apache.ibatis.type.Alias;
 @Alias("vact_disposeDTO")
 public class Vact_disposeDTO {
     private String compCode;
-    private String vactDate;
+    private int disposeVactListId;
+    private String vactStartDate;
+    private String vactEndDate;
     private String empName;
     private String depName;
     private int vactPeriod;

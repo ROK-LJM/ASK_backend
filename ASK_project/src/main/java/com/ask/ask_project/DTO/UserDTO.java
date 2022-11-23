@@ -7,10 +7,11 @@ import org.apache.ibatis.type.Alias;
 @Data
 @Alias("userDTO")
 public class UserDTO {
-    private String uId;
-    private String uPw;
-    private String uName;
     private String compCode;
-    private int uGrant;
-
+    private String userId;
+    private String userPw;
+    private String userName;
+    private int userGrant;
+    private String preUserId;
+    private String[] deleteList;
 }

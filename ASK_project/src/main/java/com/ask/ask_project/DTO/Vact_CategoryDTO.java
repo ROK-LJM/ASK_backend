@@ -8,6 +8,7 @@ import org.apache.ibatis.type.Alias;
 @Alias("vactCategoryDTO")
 public class Vact_CategoryDTO {
     private String compCode;
+    private int vactNameListId;
     private String vactCode;
     private String vactName;
     private String vactDetail;

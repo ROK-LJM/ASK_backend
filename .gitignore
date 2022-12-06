@@ -17,6 +17,9 @@
 
 # 생성된 파일
 .idea/**/contentModel.xml
+# AWS S3 관련 yml
+application-credentials.yml
+application-aws.yml
 
 # 민감하거나 변동률이 높은 파일
 .idea/**/dataSources/

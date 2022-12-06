@@ -28,6 +28,11 @@ public class EmpDTO {
     private String empAddress;      //주소
     private String empPhoto;        //사진 ( 경로 )
     private String empResume;       //이력서 ( 경로 )
+    private int mealPay;         //식대
+    private int carPay;          //차량유지비
+    private int childPay;        //출산보육수당
+
+
     private int takeVacation; // 사용휴가
 
 
@@ -40,4 +45,10 @@ public class EmpDTO {
     private String empEndYear;      // 퇴사일(year)
     private String empEndMonth;     // 퇴사일(month)
     private String empEndDay;       // 퇴사일(day)
+
+    private String empSearchMonth; //항목수당 날짜검색시 받아올변수
+
+    // [급여계산 용도]
+    private String startDate;
+    private String endDate;
 }

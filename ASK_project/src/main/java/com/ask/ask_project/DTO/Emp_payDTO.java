@@ -13,6 +13,6 @@ public class Emp_payDTO {
     private String taxFreeCode;
     private String taxFreeName;
     private String payType;
-    private String payCalc;
+    private String taxFreeCalc;
     private String[] deleteEmpPay;
 }

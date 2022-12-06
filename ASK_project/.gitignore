@@ -14,7 +14,9 @@
 
 # AWS 사용자별
 .idea/**/aws.xml
-
+# AWS S3 관련 yml
+application-credentials.yml
+application-aws.yml
 # 생성된 파일
 .idea/**/contentModel.xml
 

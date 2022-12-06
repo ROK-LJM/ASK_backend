@@ -85,8 +85,8 @@
     <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 회사 설정 > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
     <!-- 회사 설정 - 자회사 정보 등록 -->
     <insert id="createCompany" parameterType="companyDTO">
-        INSERT INTO ask.company_info(compNum, compName, compCEO, compAddress, compType, compItems, compEmail, id)
-        values (#{compNum}, #{compName}, #{compCEO}, #{compAddress}, #{compType}, #{compItems}, #{compEmail}, #{id});
+        INSERT INTO ask.company_info(compNum, compName, compCEO, compAddress, compType, compItems, compEmail, id, lunchTime)
+        values (#{compNum}, #{compName}, #{compCEO}, #{compAddress}, #{compType}, #{compItems}, #{compEmail}, #{id}, #{lunchTime});
     </insert>
 
     <!-- 회사 설정 - 자회사 정보 불러오기 -->
@@ -99,7 +99,7 @@
         UPDATE ask.company_info SET compNum = #{compNum}, compName = #{compName}
                                   , compCEO = #{compCEO}, compAddress = #{compAddress}
                                   , compType = #{compType}, compItems = #{compItems}
-                                  , compEmail = #{compEmail}
+                                  , compEmail = #{compEmail}, lunchTime = #{lunchTime}
         WHERE id = #{id};
     </update>
 
@@ -172,8 +172,8 @@
     <!-- CRUD (create, read, update, delete) -->
     <!-- 수당관리 - 수당항목 등록(create) -->
     <insert id="createEmpPay" parameterType="emp_payDTO">
-        INSERT INTO ask.emp_pay(compCode, payCode, payName, taxFreeCode, taxFreeName, payType, payCalc)
-        values(#{compCode}, #{payCode}, #{payName}, #{taxFreeCode}, #{taxFreeName}, #{payType}, #{payCalc})
+        INSERT INTO ask.emp_pay(compCode, payCode, payName, taxFreeCode, taxFreeName, payType, taxFreeCalc)
+        values(#{compCode}, #{payCode}, #{payName}, #{taxFreeCode}, #{taxFreeName}, #{payType}, #{taxFreeCalc})
     </insert>
 
     <!-- 수당관리 - 수당항목 불러오기(read) -->
@@ -183,7 +183,7 @@
 
     <!-- 수당관리 - 수당항목 수정(update) -->
     <update id="updateEmpPay" parameterType="emp_payDTO">
-        UPDATE ask.emp_pay SET compCode = #{compCode}, payCode = #{payCode}, payName = #{payName}, taxFreeName = #{taxFreeName}, payType = #{payType}, payCalc = #{payCalc}
+        UPDATE ask.emp_pay SET compCode = #{compCode}, payCode = #{payCode}, payName = #{payName}, taxFreeName = #{taxFreeName}, payType = #{payType}, taxFreeCalc = #{taxFreeCalc}
         WHERE empPayID = ${empPayID};
     </update>
     <!-- 수당관리 - 수당항목 모달 -->
@@ -232,9 +232,17 @@
         insert into ask.vact_category(compCode, vactCode, vactName, vactDetail)
         VALUES (#{compCode}, #{vactCode}, #{vactName}, #{vactDetail});
     </insert>
+    <!--휴가항목등록 예외처리-->
+    <select id="checkVactCategory" parameterType="vactCategoryDTO" resultType="int">
+            select count(vactCode) from ask.vact_category where vactCode = #{vactCode};
+    </select>
     <!--휴가항목 (read)-->
     <select id="readVactCategory" parameterType="vactCategoryDTO" resultType="vactCategoryDTO">
         select * from ask.vact_category where compCode = #{compCode};
+    </select>
+    <!--휴가항목 모달창-->
+    <select id="modalVactCetegory" parameterType="vactCategoryDTO" resultType="vactCategoryDTO">
+        select * from ask.vact_category where vactNameListId = #{vactNameListId};
     </select>
     <!--휴가항목 (update)-->
     <update id="updateVactCategory" parameterType="vactCategoryDTO">
@@ -242,75 +250,168 @@
         where compCode = #{compCode} AND vactNameListId = #{vactNameListId};
     </update>
     <!--휴가항목 (delete)-->
-    <delete id="deleteVactCategory" parameterType="int">
-        DELETE FROM ask.vact_category where compCode = #{compCode} AND vactNameListId = #{vactNameListId};
+    <delete id="deleteVactCategory" parameterType="vactCategoryDTO">
+        DELETE FROM ask.vact_category where vactNameListId = #{vactNameListId};
     </delete>
     <!--휴가처리 (create) -->
     <insert id="createVactDispose" parameterType="vact_disposeDTO">
         insert into ask.vact_dispose(compCode, vactStartDate, vactEndDate, empName, depName, vactPeriod, vactName, vactDetail, vactNote)
-        values (#{compCode}, #{vactStartDate}, #{vactEndDate}, #{empName}, #{depName}, #{vactPeriod}, #{vactName}, #{vactDetail}, #{vactNote});
+        values (#{compCode}, #{vactStartDate}, #{vactEndDate}, #{empName}, #{depName}, DATEDIFF(#{vactEndDate}, #{vactStartDate}), #{vactName}, #{vactDetail}, #{vactNote});
     </insert>
     <!--휴가처리 ( 잔여휴가 예외처리 )-->
     <select id="VactDispose" parameterType="vact_disposeDTO" resultType="int">
-        select remindVacation from emp_info where compCode = #{compCode} and empName = #{empName} and depName = #{depName};
+        select remindVacation from ask.emp_info where compCode = #{compCode} and empName = #{empName} and depName = #{depName};
     </select>
     <!--휴가처리 (read)-->
     <select id="readVactDispose" parameterType="vact_disposeDTO" resultType="vact_disposeDTO">
         select * from ask.vact_dispose where compCode = #{compCode};
     </select>
+    <!--휴가처리 승인-->
+    <select id="Approval_VactDispose" parameterType="vact_disposeDTO" resultType="vact_disposeDTO">
+        select * from ask.vact_dispose where compCode = #{compCode} and vactState='승인';
+    </select>
+    <!--휴가처리 요청-->
+    <select id="request_VactDispose" parameterType="vact_disposeDTO" resultType="vact_disposeDTO">
+        select * from ask.vact_dispose where compCode = #{compCode} and vactState='요청';
+    </select>
+    <!--휴가처리 미승인-->
+    <select id="process_VactDispose" parameterType="vact_disposeDTO" resultType="vact_disposeDTO">
+        select * from ask.vact_dispose where compCode = #{compCode} and vactState='미승인';
+    </select>
+
+    <!--휴가처리 상세 모달창-->
+    <select id="modaldetailVactlist" parameterType="vact_disposeDTO" resultType="vact_disposeDTO">
+        select * from ask.vact_dispose where disposeVactListId = #{disposeVactListId};
+    </select>
+    <!--휴가처리 - 휴가항목 모달창-->
+    <select id="modalVactCategory" parameterType="vactCategoryDTO" resultType="vactCategoryDTO">
+        select * from ask.vact_category where compCode = #{compCode} and vactNameListId = #{vactNameListId};
+    </select>
     <!--휴가처리 (update) 권한 승인-->
     <update id="updateVactDispose" parameterType="vact_disposeDTO">
-        update ask.vact_dispose set vactState = #{vactState} where compCode = #{compCode} and disposeVactListId = #{disposeVactListId};
+        update ask.vact_dispose set vactState = #{vactState}, vactNote=#{vactNote} where disposeVactListId = #{disposeVactListId};
     </update>
     <!--보유휴가 현황 ( 잔여휴가 업데이트 )-->
-    <update id="updateRemindVact">
-        update ask.emp_info set takeVacation =takeVacation + (select vactPeriod from vact_dispose where emp_info.empName = vact_dispose.empName and emp_info.empNum = vact_dispose.empNum and vact_dispose.vactState='승인'),
-                                remindVacation = totalVacation-ifnull(takeVacation, 0);
+    <update id="updateRemindVact" parameterType="vact_disposeDTO">
+        update ask.emp_info set takeVacation =(select takeVacation from (select takeVacation from ask.emp_info where empName=#{empName} and empNum =#{empNum})a) +(select vactPeriod from ask.vact_dispose where vactState='승인' and disposeVactListId=#{disposeVactListId}),
+                                ask.emp_info.remindVacation = (select remindVacation from (select remindVacation from ask.emp_info where empName=#{empName} and empNum =#{empNum})a) - (select vactPeriod from ask.vact_dispose where vactState='승인' and disposeVactListId=#{disposeVactListId})
+                            where empName = #{empName} and empNum = #{empNum} and compCode = #{compCode};
     </update>
 
     <!--보유휴가현황 (read)-->
     <select id="readVactlist" parameterType="empDTO" resultType="empDTO">
-        select * from ask.emp_info where compCode = #{compCode};
+        select depName, empName,empNum, totalVacation, takeVacation, remindVacation,empId,compCode, depCode from ask.emp_info where compCode = #{compCode};
+    </select>
+    <!--보유휴가현황 모달창-->
+    <select id="modalVactlist" parameterType="vact_disposeDTO" resultType="vact_disposeDTO">
+        select * from ask.vact_dispose where vactState = '승인' and compCode =#{compCode} and empNum=#{empNum};
     </select>
 
     <!--보유휴가현황 (update) -->
     <update id="updateVactlist" parameterType="empDTO">
         update ask.emp_info SET totalVacation = #{totalVacation}
-        where compCode = #{compCode} and empName = #{empName} and empNum = #{empNum};
+        where empId = #{empId};
     </update>
-
-    <!--출퇴근관리 (create)-->
+   <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ모바일 출근 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ-->
+    <!--출퇴근관리 (출근 요청)-->
     <insert id="createinOut_info" parameterType="inOut_infoDTO">
-        insert into ask.inOut_info(compCode, inOutDate, empCode, empName, depName, inOutStart, inOutEnd, inOutOver)
-        values (#{compCode}, #{inOutDate}, #{empCode}, #{empName}, #{depName}, #{inOutStart}, #{inOutEnd}, #{inOutOver});
+        insert into ask.inOut_info(compCode, inOutDate, empCode, empName,empRank, depCode, depName, inOutStart, inOutEnd, inOutOver)
+        values (#{compCode}, DATE_FORMAT(now(),'%Y-%m-%d'), #{empCode}, #{empName},#{empRank},#{depCode}, #{depName}, DATE_FORMAT(now(),' %H:%i'), #{inOutEnd}, #{inOutOver});
     </insert>
-
+    <!-- 출퇴근관리 (퇴근요청)-->
+    <update id="createEnd_inOutInfo" parameterType="inOut_infoDTO">
+        update ask.inOut_info set inOutEnd = DATE_FORMAT(now(),' %H:%i ') where inOutListId = #{inOutListId};
+    </update>
+    <!-- 출퇴근관리 모바일 read -->
+    <select id="readMb_inOutInfo" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
+        select * from ask.inOut_info where inOutListId = #{inOutListId} and inOutDate = date_format(now(),'%Y-%m-%d');
+    </select>
+    <!--ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ-->
+    <!--출퇴근관리 create-->
+    <insert id="createAdd_inOutInfo" parameterType="inOut_infoDTO">
+        insert into ask.inOut_info(compCode, inOutDate, empCode, empRank, empName, depName, depCode, inOutStart, inOutEnd, inOutOver, inOut_Note) VALUES
+                            (#{compCode},#{inOutDate},#{empCode},#{empRank},#{empName},#{depName},#{depCode},#{inOutStart},#{inOutEnd},#{inOutOver},#{inOut_Note})
+    </insert>
     <!--출퇴근관리 (read)-->
     <select id="readinout_info" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
-        select * from ask.inOut_info where compCode = #{compCode};
+        select compCode, inOutListId, inOutDate, empCode, empName, empRank, depCode, depName, DATE_FORMAT(inOutStart,'%H:%i') as inOutStart, DATE_FORMAT(inOutEnd,'%H:%i') as inOutEnd, ifnull(DATE_FORMAT(inOutOver,'%H:%i'),'00:00') as inOutOver,DATE_FORMAT(inOutnight,'%H:%i') as inOutnight, inOut_Note, payType, payTypeNight from ask.inOut_info where compCode = #{compCode};
     </select>
+    <!--출퇴근관리 야근수당계싼-->
+    <update id="OvertimeNightUpdate" parameterType="inOut_infoDTO">
+        update ask.inOut_info set inOutNight = ifnull(SEC_TO_TIME(TIME_TO_SEC(inOutEnd)-TIME_TO_SEC('22:00:00')),'00:00:00')
+        where compCode=#{compCode} and TIME_TO_SEC(inOutEnd) > TIME_TO_SEC('22:00:00');
 
+    </update>
+    <!--출퇴근관리 초과근무시간 업데이트-->
+    <update id="OvertimeUpdate" parameterType="inOut_infoDTO">
+        update ask.inOut_info set inOutOver = ifnull(SEC_TO_TIME(TIME_TO_SEC(inOutEnd)-TIME_TO_SEC(inOutStart)-TIME_TO_SEC('08:00:00')-TIME_TO_SEC((select lunchTime from ask.company_info where id = #{compCode}))-TIME_TO_SEC(ifnull(inOutNight,'00:00:00'))),'00:00:00')
+        where compCode=#{compCode} and TIME_TO_SEC(inOutEnd)-TIME_TO_SEC(inOutStart) > TIME_TO_SEC('08:00:00');
+    </update>
+
+    <select id="getInOut_infoTime" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
+        select empName,inOutStart,inOutEnd from ask.inOut_info where compCode=#{compCode};
+    </select>
+    <!--출퇴근관리 (모달창)-->
+    <select id="modal_inOutInfo" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
+        select compCode, inOutListId, inOutDate, empCode, empName, empRank, depCode, depName, DATE_FORMAT(inOutStart,'%H:%i') as inOutStart, DATE_FORMAT(inOutEnd,'%H:%i') as inOutEnd, ifnull(DATE_FORMAT(inOutOver,'%H:%i'),'00:00') as inOutOver,DATE_FORMAT(inOutnight,'%H:%i') as inOutnight, inOut_Note, payType, payTypeNight from ask.inOut_info where inOutListId = #{inOutListId};
+    </select>
     <!--출퇴근 관리 (update)-->
     <update id="updateinOut_info" parameterType="inOut_infoDTO">
-        update ask.inOut_info set inOutDate = #{inOutDate}, empCode = #{empCode}, empName = #{empName}, depName = #{depName},
-                                  inOutStart = #{inOutStart}, inOutEnd = #{inOutEnd}, inOutOver = #{inOutOver}
-        where compCode = #{compCode} and inOutListId = #{inOutListId};
+        update ask.inOut_info set   inOutStart = #{inOutStart}, inOutEnd = #{inOutEnd}, inOutOver = #{inOutOver} , inOut_Note = #{inOut_Note}, payType = #{payType},
+                                    payTypeNight = #{payTypeNight}
+        where  inOutListId = #{inOutListId};
     </update>
     <!--출퇴근관리 (delete)-->
     <!--pk를 주고 삭제하게 다시 생각할것-->
-    <delete id="deleteinOut_info" parameterType="int">
-        delete from ask.inOut_info where compCode = #{compCode} and inOutListId = #{inOutListId};
+    <delete id="deleteinOut_info" parameterType="inOut_infoDTO">
+        delete from ask.inOut_info where inOutListId = #{inOutListId};
     </delete>
-    <!--출퇴근 관리 (search)-->
+    <!--출퇴근 관리 (search) 이름 날짜검색 -->
     <select id="searchInout" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
-        select * from ask.inOut_info
-        where empName = #{empName} and compCode = #{compCode} and inOutDate between date (#{startDate}) and (#{endDate});
+        select compCode, inOutListId,empCode,inOutDate, depName, empName, empRank,DATE_FORMAT(inOutStart,'%H:%i')as inOutStart,DATE_FORMAT(inOutEnd,'%H:%i')as inOutEnd,DATE_FORMAT(inOutOver,'%H:%i')as inOutOver from ask.inOut_info
+        where empName = #{empName} and compCode = #{compCode} and inOutDate between date (#{startDate}) and (#{endDate}+1) order by inOutDate desc;
     </select>
+    <!--출퇴근 관리 (search) 이름만검색 -->
+    <select id="searchInoutName" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
+        select compCode, inOutListId,empCode,inOutDate, depName, empName, empRank,DATE_FORMAT(inOutStart,'%H:%i')as inOutStart,DATE_FORMAT(inOutEnd,'%H:%i')as inOutEnd,DATE_FORMAT(inOutOver,'%H:%i')as inOutOver from ask.inOut_info
+        where empName = #{empName} and compCode = #{compCode} order by inOutDate desc;
+    </select>
+    <!--출퇴근 관리 (search) 날자만 검색 -->
+    <select id="searchInoutDate" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
+        select compCode, inOutListId,empCode,inOutDate, depName, empName, empRank,DATE_FORMAT(inOutStart,'%H:%i')as inOutStart,DATE_FORMAT(inOutEnd,'%H:%i')as inOutEnd,DATE_FORMAT(inOutOver,'%H:%i')as inOutOver from ask.inOut_info
+        where compCode = #{compCode} and inOutDate between date (#{startDate}) and (#{endDate}+1) order by inOutDate desc;
+    </select>
+    <!--출퇴근 관리 시작날짜 + 이름 입력-->
+    <select id="searchInoutstartDate" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
+        select compCode, inOutListId,empCode,inOutDate, depName, empName, empRank,DATE_FORMAT(inOutStart,'%H:%i')as inOutStart,DATE_FORMAT(inOutEnd,'%H:%i')as inOutEnd,DATE_FORMAT(inOutOver,'%H:%i')as inOutOver from ask.inOut_info
+        where empName = #{empName} and compCode = #{compCode} and inOutDate between date (#{startDate}) and (select max(inOutDate) from ask.inOut_info) order by inOutDate ;
+    </select>
+    <!--출퇴근 관리 시작날짜  입력-->
+    <select id="searchInoutlastDate" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
+        select compCode, inOutListId,empCode,inOutDate, depName, empName, empRank,DATE_FORMAT(inOutStart,'%H:%i')as inOutStart,DATE_FORMAT(inOutEnd,'%H:%i')as inOutEnd,DATE_FORMAT(inOutOver,'%H:%i')as inOutOver from ask.inOut_info
+        where  compCode = #{compCode} and inOutDate between date (#{startDate}) and (select max(inOutDate) from ask.inOut_info) order by inOutDate ;
+    </select>
+    <!--출퇴근 관리 종료날짜만 입력-->
+    <select id="searchInoutendDate" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
+        select compCode, inOutListId,empCode,inOutDate, depName, empName, empRank,DATE_FORMAT(inOutStart,'%H:%i')as inOutStart,DATE_FORMAT(inOutEnd,'%H:%i')as inOutEnd,DATE_FORMAT(inOutOver,'%H:%i')as inOutOver from ask.inOut_info
+        where compCode = #{compCode} and inOutDate between date ((select min(inOutDate) from ask.inOut_info)) and (#{endDate}+1) order by inOutDate desc;
+    </select>
+    <!--출퇴근 관리 종료날짜 + 이름  입력-->
+    <select id="searchInoutEndNameDate" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
+        select compCode, inOutListId,empCode,inOutDate, depName, empName, empRank,DATE_FORMAT(inOutStart,'%H:%i')as inOutStart,DATE_FORMAT(inOutEnd,'%H:%i')as inOutEnd,DATE_FORMAT(inOutOver,'%H:%i')as inOutOver from ask.inOut_info
+        where empName= #{empName} and compCode = #{compCode} and inOutDate between date ((select min(inOutDate) from ask.inOut_info)) and (#{endDate}+1) order by inOutDate desc;
+    </select>
+
     <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 일용직관리[일용직등록] > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!-- 일용직관리[일용직등록] - 일용직정보 등록 중복처리 -->
+    <select id="getDailyCode" parameterType="dailyEmpDTO" resultType="int">
+        SELECT COUNT(*) FROM ask.daily_EMP WHERE compCode = #{compCode} AND dailyCode = #{dailyCode};
+    </select>
+
     <!-- 일용직관리[일용직등록] - 일용직정보 등록(create) -->
     <insert id="createDailyEmp" parameterType="dailyEmpDTO">
-        INSERT INTO ask.daily_EMP(compCode, d_code, d_name, depCode, d_address, d_ssn, d_phone, d_bankName, d_bankNum, d_bankOwner, d_start, d_pay)
-        VALUES(#{compCode}, #{d_code}, #{d_name}, #{depCode}, #{d_address}, #{d_ssn}, #{d_phone}, #{d_bankName}, #{d_bankNum}, #{d_bankOwner}, #{d_start}, #{d_pay});
+        INSERT INTO ask.daily_EMP(compCode, dailyId, dailyName, dailyCode, dailySsn, dailyPhone, dailyEmail, dailyAddress, dailyRank, dailyStart, dailyBankName, dailyBankNum, dailyBankOwner, dailyEnd, dailyEndDetail, dailyPay)
+        VALUES(#{compCode}, #{dailyId}, #{dailyName}, #{dailyCode}, #{dailySsn}, #{dailyPhone}, #{dailyEmail}, #{dailyAddress}, #{dailyRank}, #{dailyStart}, #{dailyBankName}, #{dailyBankNum}, #{dailyBankOwner}, #{dailyEnd}, #{dailyEndDetail},#{dailyPay});
     </insert>
 
     <!-- 일용직관리[일용직등록] - 일용직정보 불러오기(read) -->
@@ -318,11 +419,24 @@
         SELECT * FROM ask.daily_EMP WHERE compCode = #{compCode};
     </select>
 
+    <!--    &lt;!&ndash; 일용직관리[일용직등록] - 일용직정보 검색(search) - 혹시 필요하면 사용할 것 &ndash;&gt;-->
+    <!--    <select id="readDailyEmp" parameterType="dailyEmpDTO" resultType="dailyEmpDTO">-->
+    <!--        SELECT * FROM ask.daily_EMP WHERE compCode = #{compCode};-->
+    <!--    </select>-->
+
     <!-- 일용직관리[일용직등록] - 일용직정보 수정(update) -->
     <update id="updateDailyEmp" parameterType="dailyEmpDTO">
-        UPDATE ask.daily_EMP SET compCode=#{compCode}, d_code=#{d_code}, d_name=#{d_name}, depCode=#{depCode}, d_address=#{d_address}, d_ssn=#{d_ssn}, d_phone=#{d_phone},
-                                 d_bankName=#{d_bankName}, d_bankNum=#{d_bankNum}, d_bankOwner=#{d_bankOwner}, d_start=#{d_start}, d_pay=#{d_pay};
+        UPDATE ask.daily_EMP
+        SET dailyName=#{dailyName}, dailyCode=#{dailyCode}, dailySsn=#{dailySsn}, dailyPhone=#{dailyPhone}, dailyEmail=#{dailyEmail}, dailyAddress=#{dailyAddress}, dailyRank=#{dailyRank},
+            dailyStart=#{dailyStart}, dailyEnd=#{dailyEnd}, dailyEndDetail=#{dailyEndDetail}, dailyBankName=#{dailyBankName}, dailyBankNum=#{dailyBankNum}, dailyBankOwner=#{dailyBankOwner}
+        WHERE dailyId = #{dailyId};
     </update>
+
+    <!-- 일용직관리[일용직등록] - 일용직정보 수정 중복처리 -->
+    <select id="getUpdateDailyCode" parameterType="dailyEmpDTO" resultType="int">
+        SELECT COUNT(*) FROM (SELECT dailyCode FROM ask.daily_EMP WHERE dailyId NOT IN(#{dailyId})) t WHERE dailyCode = #{dailyCode};
+    </select>
+
 
     <!-- 일용직관리[일용직등록] - 일용직정보 수정 모달 -->
     <select id="updateDailyEmpModal" parameterType="dailyEmpDTO" resultType="dailyEmpDTO">
@@ -334,12 +448,16 @@
         DELETE FROM ask.daily_EMP WHERE dailyId = #{dailyId};
     </delete>
 
-
     <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 일용직관리[일용직수당] > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!-- 일용직관리[일용직 수당 등록] - 일용직수당 중복 처리 -->
+    <select id="getDPayCode" parameterType="dailyEmpPayDTO" resultType="int">
+        SELECT COUNT(*) FROM ask.daily_pay WHERE compCode = #{compCode} AND dailyPayCode = #{dailyPayCode};
+    </select>
+
     <!-- 일용직관리[일용직 수당] - 일용직수당 등록(create) -->
     <insert id="createDailyPay" parameterType="dailyEmpPayDTO">
-        INSERT INTO ask.daily_pay(compCode, d_payCode, d_payName, d_taxFreeCode, d_taxFreeName, d_taxFreeType, d_taxFreeCalc)
-        VALUES(#{compCode}, #{d_payCode}, #{d_payName}, #{d_taxFreeCode}, #{d_taxFreeName}, #{d_taxFreeType}, #{d_taxFreeCalc});
+        INSERT INTO ask.daily_pay(compCode, dailyPayCode, dailyPayName, dailyTaxFreeCode, dailyTaxFreeName, dailyTaxFreeType, dailyTaxFreeCalc)
+        VALUES(#{compCode}, #{dailyPayCode}, #{dailyPayName}, #{dailyTaxFreeCode}, #{dailyTaxFreeName}, #{dailyTaxFreeType}, #{dailyTaxFreeCalc});
     </insert>
 
     <!-- 일용직관리[일용직수당] - 일용직수당 불러오기(read) -->
@@ -347,39 +465,655 @@
         SELECT * FROM ask.daily_pay WHERE compCode = #{compCode};
     </select>
 
+    <!-- 일용직관리[일용직수당] - 일용직 비과세 정보 가져오기 -->
+    <select id="readDailyTaxFree" parameterType="DailyTaxFreeDTO" resultType="DailyTaxFreeDTO">
+        SELECT * FROM ask.daily_taxfree;
+    </select>
+
     <!-- 일용직관리[일용직수당] - 일용직수당 수정(update) -->
     <update id="updateDailyPay" parameterType="dailyEmpPayDTO">
-        UPDATE ask.daily_pay SET compCode=#{compCode}, d_payCode=#{d_payCode}, d_payName=#{d_payName}, d_taxFreeCode=#{d_taxFreeCode}, d_taxFreeName=#{d_taxFreeName},
-                                 d_taxFreeType=#{d_taxFreeType}, d_taxFreeCalc=#{d_taxFreeCalc};
+        UPDATE ask.daily_pay SET dailyPayCode=#{dailyPayCode}, dailyPayName=#{dailyPayName}, dailyTaxFreeCode=#{dailyTaxFreeCode}, dailyTaxFreeName=#{dailyTaxFreeName},
+                                 dailyTaxFreeType=#{dailyTaxFreeType}, dailyTaxFreeCalc=#{dailyTaxFreeCalc}
+        WHERE dailyPayId=#{dailyPayId};
     </update>
 
     <!-- 일용직관리[일용직수당] - 일용직수당 수정 모달 -->
     <select id="updateDailyPayModal" parameterType="dailyEmpPayDTO" resultType="dailyEmpPayDTO">
-        SELECT * FROM ask.daily_pay WHERE d_payId = #{d_payId};
+        SELECT * FROM ask.daily_pay WHERE dailyPayId = #{dailyPayId};
     </select>
 
     <!-- 일용직관리[일용직수당] - 일용직수당 삭제(delete)-->
     <delete id="deleteDailyPay" parameterType="dailyEmpPayDTO">
-        DELETE FROM ask.daily_pay WHERE d_payId = #{d_payId};
+        DELETE FROM ask.daily_pay WHERE dailyPayId = #{dailyPayId};
     </delete>
 
 
     <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 일용직관리[출퇴근 관리] > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!-- 일용직관리[출퇴근관리] - 일용직 출퇴근정보 중복처리 -->
+    <!--    <select id="getInOutDCode" parameterType="dailyInOutDTO" resultType="int">-->
+    <!--        SELECT COUNT(*) FROM ask.daily_InOut WHERE compCode = #{compCode} AND dailyCode = #{dailyCode};-->
+    <!--    </select>-->
+
     <!-- 일용직관리[출퇴근관리] - 일용직 정보 가져오기(read) - 아마도 기존의 일용직 정보를 그대로 가져가도 될듯? 실험해보세요 -->
     <select id="searchDailyEmp" parameterType="dailyEmpDTO" resultType="dailyEmpDTO">
-        SELECT * FROM ask.daily_EMP WHERE dailyId = #{dailyId};
+        SELECT compCode, dailyId, dailyName, dailyCode, dailySsn, dailyPhone, dailyEmail, dailyAddress, dailyRank, dailyStart, dailyBankName, dailyBankNum, dailyBankOwner, dailyEnd, dailyEndDetail, dailyPay
+        FROM ask.daily_EMP
+        WHERE compCode = #{compCode};
     </select>
     <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ   -->
     <!-- 일용직관리[출퇴근관리] - 일용직 출퇴근정보 등록(create) -->
-
+    <insert id="createDailyInOut" parameterType="dailyInOutDTO">
+        INSERT INTO ask.daily_InOut(compCode, dailyDate, dailyCode, dailyName, dailyRank, dailyInOutStart, dailyInOutEnd, dailyInOutDetail)
+        VALUES(#{compCode}, #{dailyDate}, #{dailyCode}, #{dailyName}, #{dailyRank}, #{dailyInOutStart}, #{dailyInOutEnd}, #{dailyInOutDetail});
+    </insert>
 
     <!-- 일용직관리[출퇴근관리] - 일용직 출퇴근정보 불러오기(read) -->
+    <select id="readDailyInOut" parameterType="dailyInOutDTO" resultType="dailyInOutDTO">
+        SELECT compCode, dailyListId, dailyDate, dailyCode, dailyName, dailyRank, DATE_FORMAT(dailyInOutStart,'%H:%i') as dailyInOutStart, DATE_FORMAT(dailyInOutEnd,'%H:%i') as dailyInOutEnd, dailyInOutDetail, ifnull(DATE_FORMAT(dailyInOutOver,'%H:%i'), '00:00') as dailyInOutOver
+        FROM ask.daily_InOut
+        WHERE compCode = #{compCode}
+        ORDER BY dailyDate desc;
+    </select>
+
+
+    <!-- 일용직관리[출퇴근관리] - 일용직 초과근무시간 계산하기 -->
+    <update id="updateOverTime" parameterType="dailyInOutDTO">
+        update ask.daily_InOut set dailyInOutOver = ifnull(SEC_TO_TIME(TIME_TO_SEC(dailyInOutEnd)-TIME_TO_SEC(dailyInOutStart)-TIME_TO_SEC('08:00:00')-TIME_TO_SEC((select lunchTime from ask.company_info where id = #{compCode}))-TIME_TO_SEC(ifnull(dailyInOutNight,'00:00:00'))),'00:00:00')
+        where compCode=#{compCode} and TIME_TO_SEC(dailyInOutEnd)-TIME_TO_SEC(dailyInOutStart) > TIME_TO_SEC('08:00:00');
+    </update>
+
+
+    <!-- 일용직관리[출퇴근관리] - 일용직 연장, 야간근무수당 계산하기 -->
+    <update id="updateNightTime" parameterType="dailyInOutDTO">
+        update ask.daily_InOut set dailyInOutNight = ifnull(SEC_TO_TIME(TIME_TO_SEC(dailyInOutEnd)-TIME_TO_SEC('22:00:00')),'00:00:00')
+        where compCode=#{compCode} and TIME_TO_SEC(dailyInOutEnd) > TIME_TO_SEC('22:00:00');
+    </update>
+
+    <!-- 일용직관리[출퇴근관리] - 일용직 출퇴근정보 수정 중복처리 -->
+    <select id="getInOutDCode" parameterType="dailyInOutDTO" resultType="int">
+        SELECT COUNT(*) FROM (SELECT dailyCode FROM ask.daily_InOut WHERE dailyListId NOT IN(#{dailyListId})) t WHERE dailyCode = #{dailyCode};
+    </select>
 
 
     <!-- 일용직관리[출퇴근관리] - 일용직 출퇴근정보 수정(update) -->
-
+    <update id="updateDailyInOut" parameterType="dailyInOutDTO">
+        UPDATE ask.daily_InOut SET dailyInOutStart=#{dailyInOutStart}, dailyInOutEnd=#{dailyInOutEnd}, dailyInOutDetail=#{dailyInOutDetail},
+                                   dailyInOutNight=#{dailyInOutNight}, dailyPayType=#{dailyPayType}, dailyPayTypeNight=#{dailyPayTypeNight}
+        WHERE dailyListId=#{dailyListId};
+    </update>
 
     <!-- 일용직관리[출퇴근관리] - 일용직 출퇴근정보 모달(modal) -->
+    <select id="updateDailyInOutModal" parameterType="dailyInOutDTO" resultType="dailyInOutDTO">
+        SELECT compCode, dailyListId, dailyDate, dailyCode, dailyName, dailyRank,  DATE_FORMAT(dailyInOutStart,'%H:%i') as dailyInOutStart, DATE_FORMAT(dailyInOutEnd,'%H:%i') as dailyInOutEnd, dailyInOutDetail, ifnull(DATE_FORMAT(dailyInOutOver,'%H:%i'),'00:00')as dailyInOutOver, DATE_FORMAT(dailyInOutNight,'%H:%i') as dailyInOutNight, dailyPayType, dailyPayTypeNight FROM ask.daily_InOut WHERE dailyListId = #{dailyListId};
+    </select>
 
     <!-- 일용직관리[출퇴근관리] - 일용직 출퇴근정보 삭제(delete) -->
+    <delete id="deleteDailyInOut" parameterType="dailyInOutDTO">
+        DELETE FROM ask.daily_InOut WHERE dailyListId = #{dailyListId};
+    </delete>
+
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 일용직 모바일 출근 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ-->
+    <!--    &lt;!&ndash; 일용직 모바일 출퇴근관리 (출근 요청)&ndash;&gt;-->
+    <!--    <insert id="createinOut_info" parameterType="inOut_infoDTO">-->
+    <!--        insert into ask.daily_InOut(compCode, dailyListId, dailyDate, dailyCode, dailyName, depCode, depName, dailyRank, dailyInOutStart, dailyInOutEnd, dailyInOutDetail, dailyInOutOver)-->
+    <!--        values (#{compCode}, DATE_FORMAT(now(),'%Y-%m-%d'), #{empCode}, #{empName},#{empRank},#{depCode}, #{depName}, DATE_FORMAT(now(),' %H:%i'), #{inOutEnd}, #{inOutOver});-->
+    <!--    </insert>-->
+    <!--    &lt;!&ndash; 일용직 모바일 출퇴근관리 (퇴근 요청)&ndash;&gt;-->
+    <!--    <update id="createEnd_inOutInfo" parameterType="inOut_infoDTO">-->
+    <!--        update ask.daily_InOut set inOutEnd = DATE_FORMAT(now(),' %H:%i ') where inOutListId = #{inOutListId};-->
+    <!--    </update>-->
+    <!--    &lt;!&ndash; 일용직 모바일 출퇴근관리 read &ndash;&gt;-->
+    <!--    <select id="readMb_inOutInfo" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">-->
+    <!--        select * from ask.daily_InOut where inOutListId = #{inOutListId} and inOutDate = date_format(now(),'%Y-%m-%d');-->
+    <!--    </select>-->
+
+
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 일용직관리[출퇴근현황] > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!-- 날짜만 선택한 경우 -->
+    <select id="searchDailyInOut1" parameterType="dailyInOutDTO" resultType="dailyInOutDTO">
+        SELECT * FROM ask.daily_InOut WHERE compCode=#{compCode} AND dailyDate BETWEEN date (#{dailyStartDate}) AND (#{dailyEndDate});
+    </select>
+
+    <!-- 날짜랑 이름 둘 다 선택한 경우 -->
+    <select id="searchDailyInOut2" parameterType="dailyInOutDTO" resultType="dailyInOutDTO">
+        SELECT * FROM ask.daily_InOut WHERE compCode=#{compCode} AND dailyName = #{dailyName} AND dailyDate BETWEEN date (#{dailyStartDate}) AND (#{dailyEndDate});
+    </select>
+
+    <!-- 이름만 선택한 경우 -->
+    <select id="searchDailyInOut3" parameterType="dailyInOutDTO" resultType="dailyInOutDTO">
+        SELECT * FROM ask.daily_InOut WHERE  compCode=#{compCode} AND dailyName = #{dailyName};
+    </select>
+
+    <!-- startDate 값만 입력한 경우 -->
+    <select id="searchDailyInOut4" parameterType="dailyInOutDTO" resultType="dailyInOutDTO">
+        SELECT compCode, dailyRank, dailyDate, dailyName, DATE_FORMAT(dailyInOutStart, '%H:%i') as dailyInOutStart, DATE_FORMAT(dailyInOutEnd, '%H:%i') as dailyInOutEnd, DATE_FORMAT(dailyInOutOver,'%H:%i') as dailyInOutOver
+        FROM ask.daily_InOut
+        WHERE compCode = #{compCode} AND dailyDate BETWEEN date (#{dailyStartDate}) AND (select max(dailyDate) FROM ask.daily_InOut) ORDER BY dailyDate;
+    </select>
+
+    <!-- startDate 값과 이름만 입력한 경우 -->
+    <select id="searchDailyInOut5" parameterType="dailyInOutDTO" resultType="dailyInOutDTO">
+        SELECT compCode, dailyRank, dailyDate, dailyName, DATE_FORMAT(dailyInOutStart, '%H:%i') as dailyInOutStart, DATE_FORMAT(dailyInOutEnd, '%H:%i') as dailyInOutEnd, DATE_FORMAT(dailyInOutOver,'%H:%i') as dailyInOutOver
+        FROM ask.daily_InOut
+        WHERE compCode=#{compCode} AND dailyName = #{dailyName} AND dailyDate BETWEEN date (#{dailyStartDate}) AND (select max(dailyDate) FROM ask.daily_InOut) ORDER BY dailyDate;
+    </select>
+
+    <!-- endDate 값만 입력한 경우 -->
+    <select id="searchDailyInOut6" parameterType="dailyInOutDTO" resultType="dailyInOutDTO">
+        SELECT compCode, dailyRank, dailyDate, dailyName, DATE_FORMAT(dailyInOutStart, '%H:%i') as dailyInOutStart, DATE_FORMAT(dailyInOutEnd, '%H:%i') as dailyInOutEnd, DATE_FORMAT(dailyInOutOver,'%H:%i') as dailyInOutOver
+        FROM ask.daily_InOut
+        WHERE compCode=#{compCode} AND dailyDate BETWEEN ((select min(dailyDate) FROM ask.daily_InOut)) AND date (#{dailyEndDate}) ORDER BY dailyDate DESC;
+    </select>
+
+
+    <!-- endDate 값과 이름을 입력한 경우 -->
+    <select id="searchDailyInOut7" parameterType="dailyInOutDTO" resultType="dailyInOutDTO">
+        SELECT compCode, dailyDate, dailyName, DATE_FORMAT(dailyInOutStart, '%H:%i') as dailyInOutStart, DATE_FORMAT(dailyInOutEnd, '%H:%i') as dailyInOutEnd, DATE_FORMAT(dailyInOutOver,'%H:%i') as dailyInOutOver
+        FROM ask.daily_InOut
+        WHERE compCode=#{compCode} AND dailyName = #{dailyName} AND dailyDate BETWEEN ((select min(dailyDate) FROM ask.daily_InOut)) AND date (#{dailyEndDate}) ORDER BY dailyDate;
+    </select>
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 급여관리 > ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!--기본급여-->
+    <select id="getbaseWage" parameterType="empDTO" resultType="int">
+        select round(empPay/12,-1) as empPay from ask.emp_info where empName=#{empName} and empNum = #{empNum} AND compCode=#{compCode} AND depName=#{depName};
+    </select>
+    <!--부양가족수 가져오기-->
+    <select id="getfamilyNum" parameterType="empDTO" resultType="Integer">
+        select empFamilyNum from ask.emp_info where  empName=#{empName} and empNum = #{empNum} AND compCode=#{compCode} AND depName=#{depName};
+    </select>
+    <!--소득세-->
+    <select id="getincomeTax" parameterType="empDTO" resultType="SimpleTaxTableDTO">
+        select * from ask.taxPay where Salary between (select round(empPay/12/1000,-1) as empPay from ask.emp_info where empName=#{empName} and empNum = #{empNum})
+                                           and (select round(empPay/12/1000,-1) as empPay from ask.emp_info
+                                                where  empName=#{empName} and empNum = #{empNum} AND compCode=#{compCode} AND depName=#{depName})+10;
+    </select>
+    <!--    야간근로시간 변동(시간)-->
+    <select id="getinOutnight" parameterType="empDTO" resultType="String">
+        select  sum(TIME_TO_SEC(inOutnight))  as inOutnight from ask.inOut_info where empName=#{empName} and compCode=#{compCode} and empCode = #{empNum}
+                                                                                  and inOutDate  between date (#{startDate}) and (#{endDate}+1) and payTypeNight ='변동(시간)';
+    </select>
+    <!--    야간근로시간 변동(일)-->
+    <select id="getinOutnightday" parameterType="empDTO" resultType="String">
+        select  sum(TIME_TO_SEC(inOutnight))  as inOutnight from ask.inOut_info where empName=#{empName} and compCode=#{compCode} and empCode = #{empNum}
+                                                                                  and inOutDate  between date (#{startDate}) and (#{endDate}+1) and payTypeNight ='변동(일)';
+    </select>
+
+    <!--연장근로시간 변동(시간)-->
+    <select id="getinOutOver" parameterType="empDTO" resultType="String">
+        select sum(TIME_TO_SEC(inOutOver)) as inOutOver from ask.inOut_info where empName=#{empName} and compCode=#{compCode} and empCode = #{empNum}
+                                                                              and inOutDate  between date (#{startDate}) and (#{endDate}+1) and payType ='변동(시간)';
+    </select>
+    <!--연장근로시간 변동(일)-->
+    <select id="getinOutOverDayTax" parameterType="empDTO" resultType="String">
+        select  sum(TIME_TO_SEC(inOutOver)) as inOutOver from ask.inOut_info where empName=#{empName} and compCode=#{compCode}  and empCode = #{empNum}
+                                                                               and inOutDate  between date (#{startDate}) and (#{endDate}+1) and payType ='변동(일)';
+    </select>
+
+
+
+    <!-- 급여관리 - 현재 날짜 기준 한달 치 초과근무시간 가져오기 -->
+    <select id="readOverInOutInfo" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
+        SELECT inOutOver FROM ask.inOut_info WHERE year(inOutDate) = year(current_date)
+                                               AND month(inOutDate) = month(current_date)
+                                               AND  empName=#{empName} and empCode = #{empCode} AND compCode=#{compCode} AND depName=#{depName};
+    </select>
+
+    <!-- 급여관리 - 야간 근무 시간 가져오기 -->
+    <select id="readNightTime" parameterType="InOut_infoDTO" resultType="InOut_infoDTO">
+        SELECT ADDTIME(SUBTIME(inOutEnd, inOutStart), '24:00:00') AS nightTime FROM ask.inOut_info
+        WHERE empCode=#{empCode} AND <![CDATA[ inOutEnd < inOutStart ]]>;
+    </select>
+
+
+    <!-- [ 야간근로수당 계산식 가져오기 ] -->
+    <select id="getNightCalc" parameterType="emp_payDTO" resultType="String">
+        SELECT taxFreeCalc FROM ask.emp_pay WHERE compCode = #{compCode}
+    </select>
+
+
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 급여관리[임원직]> ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!-- 급여관리[임원직] - 급여 명세서 중복처리(param : payTitle, empNum) -->
+    <select id="duplicateCheck" parameterType="Salary_statementDTO" resultType="int">
+        SELECT COUNT(*) FROM ask.salary_statement WHERE payTitle=#{payTitle} AND empNum=#{empNum};
+    </select>
+
+    <!--  급여관리[임원직] - 급여 명세서 추가(create) -->
+    <insert id="createSalary" parameterType="Salary_statementDTO">
+        INSERT INTO ask.salary_statement(compCode, payTitle, startDate, endDate, payDay, empNum, empName, depName, empPay, weeklyPay,
+                                         nightTimePay, overtimePay, weekendPay, annualAllowance, dpndnAlwnc, incomeTax, localTaxes, ntnlPnsn, hlthInsrn, empIns,
+                                         lngTrmCrIns, chldbChalw, foodPay, carStatePay, expense, totalPay, ddctn, actlPymnt, totalAddPay, totalAddTax, sumTotalAdd)
+        values(#{compCode}, #{payTitle}, #{startDate}, #{endDate}, #{payDay}, #{empNum}, #{empName}, #{depName}, #{empPay}, #{weeklyPay},
+               #{nightTimePay}, #{overtimePay}, #{weekendPay}, #{annualAllowance}, #{dpndnAlwnc}, #{incomeTax}, #{localTaxes}, #{ntnlPnsn}, #{hlthInsrn}, #{empIns},
+               #{lngTrmCrIns}, #{chldbChalw}, #{foodPay}, #{carStatePay}, #{expense}, #{totalPay}, #{ddctn}, #{actlPymnt}, #{totalAddPay}, #{totalAddTax}, #{sumTotalAdd});
+    </insert>
+
+
+    <!-- 급여관리[임원직] - 원하는 사원 정보 가져오기(read) -->
+    <select id="getEmpInfo" parameterType="empDTO" resultType="empDTO">
+        SELECT * FROM ask.emp_info WHERE compCode=#{compCode} AND empNum=#{empNum};
+    </select>
+
+
+    <!-- [ 급여관리 - [메인]급여 명세서 불러오기(임원직)(Read) ] -->
+    <!-- 사원코드, 성명, 직위/직급, 기본급, 추가수당, 세금, 합계 -->
+    <select id="readMainSalary" parameterType="Salary_statementDTO" resultType="Salary_statementDTO">
+        SELECT * FROM ask.salary_statement WHERE compCode = #{compCode};
+    </select>
+
+    <!--    &lt;!&ndash; 날짜로 검색할 시,  급여관리 - [메인]급여 명세서 불러오기(임원직)(Read) &ndash;&gt;-->
+    <!--    <select id="readMainSalary2" parameterType="Salary_statementDTO" resultType="Salary_statementDTO">-->
+    <!--        SELECT * FROM ask.salary_statement WHERE compCode = #{compCode} AND monthYear = #{monthYear};-->
+    <!--    </select>-->
+
+
+    <!-- [ 급여관리 - [모달]급여 명세서 불러오기(임원직)(Read) ] -->
+    <!-- param : payStatementId -->
+    <select id="readModalSalary" parameterType="Salary_statementDTO" resultType="Salary_statementDTO">
+        SELECT * FROM ask.salary_statement WHERE payStatementId = #{payStatementId};
+    </select>
+
+    <!-- [ 급여관리 - 급여 명세서 수정 중복확인 ] -->
+    <!-- param : payTitle, empNum -->
+    <select id="duplicateCheckUpdate" parameterType="Salary_statementDTO" resultType="Salary_statementDTO">
+        SELECT COUNT(*) FROM (SELECT payTitle, empNum FROM ask.salary_statement WHERE payStatementId NOT IN(#{payStatementId})) t WHERE payTitle = #{payTitle} AND empNum = #{empNum};
+    </select>
+
+    <!-- [ 급여관리 - 급여 명세서 수정(임원직)(Update) ] -->
+    <!-- param : payStatementId -->
+    <update id="updateSalary" parameterType="Salary_statementDTO">
+        UPDATE ask.salary_statement SET payTitle=#{payTitle}, payDay=#{payDay}, empNum=#{empNum}, empName=#{empName}, depName=#{depName},
+                                        empPay=#{empPay}, weeklyPay=#{weeklyPay}, nightTimePay=#{nightTimePay}, overtimePay=#{overtimePay}, weekendPay=#{weekendPay}, annualAllowance=#{annualAllowance},
+                                        dpndnAlwnc=#{dpndnAlwnc}, incomeTax=#{incomeTax}, localTaxes=#{localTaxes}, ntnlPnsn=#{ntnlPnsn}, hlthInsrn=#{hlthInsrn}, empIns=#{empIns},
+                                        lngTrmCrIns=#{lngTrmCrIns}, chldbChalw=#{chldbChalw}, foodPay=#{foodPay}, carStatePay=#{carStatePay}, expense=#{expense}, totalPay=#{totalPay},
+                                        ddctn=#{ddctn}, actlPymnt=#{actlPymnt}
+        WHERE payStatementId=#{payStatementId};
+    </update>
+
+
+    <!-- [ 급여관리 - 급여 명세서 삭제(임원직)(Delete) ] -->
+    <!-- param : payStatementId -->
+    <delete id="deleteSalary" parameterType="Salary_statementDTO">
+        DELETE FROM ask.salary_statement WHERE payStatementId=#{payStatementId};
+    </delete>
+
+
+    <!-- [ 급여관리 - 수당 계산식 불러오기(read) ] -->
+    <select id="getCalc" parameterType="emp_payDTO" resultType="String">
+        SELECT taxFreeCalc FROM ask.emp_pay WHERE payName=#{payName} AND payType=#{payType};
+    </select>
+
+    <!-- [ 급여관리 - 출력버튼[임직원] -->
+    <select id="getSalaryList" parameterType="String" resultType="Salary_statementDTO">
+        SELECT * FROM ask.salary_statement WHERE payStatementId = #{payStatementId};
+    </select>
+
+
+    <!-- [ 급여관리 - 경비정보 가져오기[임직원] -->
+    <select id="getExpense" parameterType="empDTO" resultType="int">
+        SELECT price FROM ask.expense_info WHERE empNum =#{empNum} AND empName=#{empName} AND depCode=#{depCode} AND expenseDate between #{startDate} and #{EndDate} AND approval = '승인';
+    </select>
+
+
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ < 급여관리[일용직]> ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!--기본급-->
+    <select id="getbaseWage2" parameterType="dailySalaryStatement" resultType="int">
+        select round(dailyPay,-1) as empPay from ask.daily_EMP where dailyName=#{dailyName} and dailyCode = #{dailyCode} AND compCode=#{compCode};
+    </select>
+
+    <!--야간근로시간 변동(시간)(일용직)-->
+    <select id="getinOutnight2" parameterType="dailySalaryStatement" resultType="String">
+        select  sum(TIME_TO_SEC(dailyInOutOver))  as dailyInOutOver from ask.daily_InOut where dailyName=#{dailyName} and compCode=#{compCode} and dailyCode = #{dailyCode}
+                                                                                           and dailyDate  between date (#{dailyStartDate}) and (#{dailyEndDate}+1) and dailyPayTypeNight ='변동(시간)';
+    </select>
+
+    <!--야간근로시간 변동(일)(일용직)-->
+    <select id="getinOutnightday2" parameterType="dailySalaryStatement" resultType="String">
+        select  sum(TIME_TO_SEC(dailyInOutOver))  as dailyInOutOver from ask.daily_InOut where dailyName=#{dailyName} and compCode=#{compCode} and dailyCode = #{dailyCode}
+                                                                                           and dailyDate  between date (#{dailyStartDate}) and (#{dailyEndDate}+1) and dailyPayTypeNight ='변동(일)';
+    </select>
+
+    <!--연장근로시간 변동(시간)(일용직)-->
+    <select id="getinOutOver2" parameterType="dailySalaryStatement" resultType="String">
+        select sum(TIME_TO_SEC(dailyInOutOver)) as dailyInOutOver from ask.daily_InOut where dailyName=#{dailyName} and compCode=#{compCode} and dailyCode = #{dailyCode}
+                                                                                         and dailyDate  between date (#{dailyStartDate}) and (#{dailyEndDate}+1) and dailyPayType ='변동(시간)';
+    </select>
+
+    <!--연장근로시간 변동(일)(일용직)-->
+    <select id="getinOutOverDayTax2" parameterType="dailySalaryStatement" resultType="String">
+        select  sum(TIME_TO_SEC(dailyInOutOver)) as dailyInOutOver from ask.daily_InOut where dailyName=#{dailyName} and compCode=#{compCode}  and dailyCode = #{dailyCode}
+                                                                                          and dailyDate  between date (#{dailyStartDate}) and (#{dailyEndDate}+1) and dailyPayType ='변동(일)';
+    </select>
+
+    <!--급여관리 - 현재 날짜 기준 한달 치 초과근무시간 가져오기(일용직)-->
+    <select id="readOverInOutInfo2" parameterType="inOut_infoDTO" resultType="inOut_infoDTO">
+        SELECT inOutOver FROM ask.inOut_info WHERE year(inOutDate) = year(current_date)
+                                               AND month(inOutDate) = month(current_date)
+                                               AND  empName=#{empName} and empCode = #{empCode} AND compCode=#{compCode} AND depName=#{depName};
+    </select>
+
+    <!--급여관리 - 야간 근무 시간 가져오기(일용직)-->
+    <select id="readNightTime2" parameterType="InOut_infoDTO" resultType="InOut_infoDTO">
+        SELECT ADDTIME(SUBTIME(inOutEnd, inOutStart), '24:00:00') AS nightTime FROM ask.inOut_info
+        WHERE empCode=#{empCode} AND <![CDATA[ inOutEnd < inOutStart ]]>;
+    </select>
+
+
+    <!-- [ 야간근로수당 계산식 가져오기(일용직) ]-->
+    <select id="getNightCalc2" parameterType="emp_payDTO" resultType="String">
+        SELECT taxFreeCalc FROM ask.emp_pay WHERE compCode = #{compCode}
+    </select>
+
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+    <!-- 급여관리[일용직] - 급여 명세서 중복처리(param : payTitle, empNum) -->
+    <select id="duplicateCheck2" parameterType="dailySalaryStatement" resultType="int">
+        SELECT COUNT(*) FROM ask.daily_salary_statement WHERE dailyPayTitle=#{dailyPayTitle} AND dailyCode=#{dailyCode};
+    </select>
+
+    <!--  급여관리[일용직] - 급여 명세서 추가(create) -->
+    <insert id="createDailySalary" parameterType="dailySalaryStatement">
+        INSERT INTO ask.daily_salary_statement(compCode, dailyCode, dailyPayTitle, dailyStartDate, dailyEndDate, dailyPayDay, dailyName, dailyPay, dailyWeeklyPay,
+                                               dailyOvertimePay, dailyNightTimePay, dailyWeekendPay, dailyIncomeTax, dailyLocalTaxes, dailyNtnlPnsn, dailyHlthInsrn,
+                                               dailyEmpIns, dailyIngTrmCrIns, dailyTotalPay, dailyDdctn, dailyActlPymnt, dailyTotalAddPay, dailyTotalAddTax, dailySumTotalAdd, dailyRank)
+        values(#{compCode}, #{dailyCode}, #{dailyPayTitle}, #{dailyStartDate}, #{dailyEndDate}, #{dailyPayDay}, #{dailyName}, #{dailyPay}, #{dailyWeeklyPay},
+               #{dailyOvertimePay}, #{dailyNightTimePay}, #{dailyWeekendPay}, #{dailyIncomeTax}, #{dailyLocalTaxes}, #{dailyNtnlPnsn}, #{dailyHlthInsrn},
+               #{dailyEmpIns}, #{dailyIngTrmCrIns}, #{dailyTotalPay}, #{dailyDdctn}, #{dailyActlPymnt}, #{dailyTotalAddPay}, #{dailyTotalAddTax}, #{dailySumTotalAdd}, #{dailyRank});
+    </insert>
+
+
+    <!-- 급여관리[일용직] - 원하는 사원 정보 가져오기(read) -->
+    <select id="getEmpInfo2" parameterType="empDTO" resultType="empDTO">
+        SELECT * FROM ask.emp_info WHERE compCode=#{compCode} AND empNum=#{empNum};
+    </select>
+
+
+    <!-- [ 급여관리 - [메인]급여 명세서 불러오기(일용직)(Read) ] -->
+    <!-- 사원코드, 성명, 직위/직급, 기본급, 추가수당, 세금, 합계 -->
+    <select id="readDailyMainSalary" parameterType="dailySalaryStatement" resultType="dailySalaryStatement">
+        SELECT * FROM ask.daily_salary_statement WHERE compCode = #{compCode};
+    </select>
+
+    <!-- [ 급여관리 - [모달]급여 명세서 불러오기(일용직)(Read) ] -->
+    <!-- param : payStatementId -->
+    <select id="readDailyModalSalary" parameterType="dailySalaryStatement" resultType="dailySalaryStatement">
+        SELECT * FROM ask.daily_salary_statement WHERE statementId = #{statementId};
+    </select>
+
+    <!-- [ 급여관리 - 급여 명세서 수정 중복확인(일용직) ] -->
+    <!-- param : payTitle, empNum -->
+    <select id="duplicateCheckUpdate2" parameterType="Salary_statementDTO" resultType="Salary_statementDTO">
+        SELECT COUNT(*) FROM (SELECT payTitle, empNum FROM ask.salary_statement WHERE payStatementId NOT IN(#{payStatementId})) t WHERE payTitle = #{payTitle} AND empNum = #{empNum};
+    </select>
+
+    <!-- [ 급여관리 - 급여 명세서 수정(일용직)(Update) ] -->
+    <!-- param : payStatementId -->
+    <update id="updateSalary2" parameterType="Salary_statementDTO">
+        UPDATE ask.salary_statement SET payTitle=#{payTitle}, payDay=#{payDay}, empNum=#{empNum}, empName=#{empName}, depName=#{depName},
+                                        empPay=#{empPay}, weeklyPay=#{weeklyPay}, nightTimePay=#{nightTimePay}, overtimePay=#{overtimePay}, weekendPay=#{weekendPay}, annualAllowance=#{annualAllowance},
+                                        dpndnAlwnc=#{dpndnAlwnc}, incomeTax=#{incomeTax}, localTaxes=#{localTaxes}, ntnlPnsn=#{ntnlPnsn}, hlthInsrn=#{hlthInsrn}, empIns=#{empIns},
+                                        lngTrmCrIns=#{lngTrmCrIns}, chldbChalw=#{chldbChalw}, foodPay=#{foodPay}, carStatePay=#{carStatePay}, expense=#{expense}, totalPay=#{totalPay},
+                                        ddctn=#{ddctn}, actlPymnt=#{actlPymnt}
+        WHERE payStatementId=#{payStatementId};
+    </update>
+
+
+    <!-- [ 급여관리 - 급여 명세서 삭제(일용직)(Delete) ] -->
+    <!-- param : payStatementId -->
+    <delete id="deleteDailySalary" parameterType="dailySalaryStatement">
+        DELETE FROM ask.daily_salary_statement WHERE statementId=#{statementId};
+    </delete>
+
+
+    <!-- [ 급여관리 - 수당 계산식 불러오기(read)(일용직) ] -->
+    <select id="getCalc2" parameterType="emp_payDTO" resultType="String">
+        SELECT taxFreeCalc FROM ask.emp_pay WHERE payName=#{payName} AND payType=#{payType};
+    </select>
+
+    <!-- [ 급여관리 - 출력버튼[일용직] -->
+    <select id="getSalaryList2" parameterType="String" resultType="dailySalaryStatement">
+        SELECT * FROM ask.daily_salary_statement WHERE statementId = #{statementId};
+    </select>
+
+    <!-- [ 급여관리 - 경비정보 가져오기[임원직] -->
+    <select id="getExpense2" parameterType="dailySalaryStatement" resultType="int">
+        SELECT price FROM ask.expense_info WHERE empNum =#{empNum} AND empName=#{empName} AND depCode=#{depCode} AND expenseDate between #{startDate} and #{EndDate} AND approval = '승인';
+    </select>
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 경비관리 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ-->
+    <!--경비처리 create-->
+    <insert id="expenseCreate" parameterType="Expense_infoDTO">
+        insert into ask.expense_info (compCode, empNum, empName, depCode, depName, shopName, shopNum, expenseDate, expenseName, history, price, documentation, totalPrice) values
+        (#{compCode}, #{empNum}, #{empName}, #{depCode}, #{depName}, #{shopName}, #{shopNum}, #{expenseDate}, #{expenseName}, #{history}, #{price}, #{documentation}, #{totalPrice});
+    </insert>
+    <!--경비관리 read-->
+    <select id="expenseRead" parameterType="Expense_infoDTO" resultType="Expense_infoDTO">
+        select expenseListId, empNum, empName, depCode, depName, shopName, shopNum, expenseDate, expenseName, history, price, documentation, compCode,sum(totalPrice) as totalPrice from expense_info where compCode = #{compCode};
+    </select>
+    <!--경비관리 update-->
+    <update id="expenseUpdate" parameterType="Expense_infoDTO">
+        update ask.expense_info set shopName = #{shopName} , shopNum = #{shopNum}, expenseDate = #{expenseDate}, expenseName = #{expenseName}, history = #{history},
+                                price = #{price}, documentation = #{documentation}
+        where expenseListId = #{expenseListId};
+    </update>
+    <!--경비관리 delete-->
+    <delete id="expenseDelete" parameterType="Expense_infoDTO">
+        delete from ask.expense_info where expenseListId = #{expenseListId}
+    </delete>
+    <!--경비관리 모달창-->
+    <select id="expenseModal" parameterType="Expense_infoDTO" resultType="Expense_infoDTO">
+        select * from ask.expense_info where expenseListId = #{expenseListId};
+    </select>
+    <!--경비 관리 (search) 이름 날짜검색 -->
+    <select id="expenseSearch" parameterType="Expense_infoDTO" resultType="Expense_infoDTO">
+        select * from ask.expense_info
+        where empName = #{empName} and compCode = #{compCode} and expenseDate between date (#{startDate}) and (#{endDate}+1) order by expenseDate desc;
+    </select>
+    <!--경비 관리 (search) 이름만검색 -->
+    <select id="expenseName" parameterType="Expense_infoDTO" resultType="Expense_infoDTO">
+        select * from ask.expense_info
+        where empName = #{empName} and compCode = #{compCode} order by expenseDate desc;
+    </select>
+    <!--경비 관리 (search) 날자만 검색 -->
+    <select id="expensedate" parameterType="Expense_infoDTO" resultType="Expense_infoDTO">
+        select * from ask.expense_info
+        where compCode = #{compCode} and expenseDate between date (#{startDate}) and (#{endDate}+1) order by expenseDate desc;
+    </select>
+    <!--경비 관리 시작날짜 + 이름 입력-->
+    <select id="expenseStartDateName" parameterType="Expense_infoDTO" resultType="Expense_infoDTO">
+        select * from ask.expense_info
+        where empName = #{empName} and compCode = #{compCode} and expenseDate between date (#{startDate}) and (select max(inOutDate) from ask.inOut_info) order by expenseDate ;
+    </select>
+    <!--경비 관리 시작날짜  입력-->
+    <select id="expenseStartDate" parameterType="Expense_infoDTO" resultType="Expense_infoDTO">
+        select * from ask.expense_info
+        where  compCode = #{compCode} and expenseDate between date (#{startDate}) and (select max(inOutDate) from ask.inOut_info) order by expenseDate ;
+    </select>
+    <!--경비 관리 종료날짜만 입력-->
+    <select id="expenseEndDate" parameterType="Expense_infoDTO" resultType="Expense_infoDTO">
+        select * from ask.expense_info
+        where compCode = #{compCode} and expenseDate between date ((select min(inOutDate) from ask.inOut_info)) and (#{endDate}+1) order by expenseDate desc;
+    </select>
+    <!--경비 관리 종료날짜 + 이름  입력-->
+    <select id="expenseEndDateName" parameterType="Expense_infoDTO" resultType="Expense_infoDTO">
+        select * from ask.expense_info
+        where empName= #{empName} and compCode = #{compCode} and expenseDate between date ((select min(inOutDate) from ask.inOut_info)) and (#{endDate}+1) order by expenseDate desc;
+    </select>
+    
+    <!-- ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ경리/회계ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ-->
+    <!--거래처관리 create-->
+    <insert id="clientCreate" parameterType="Client_infoDTO">
+        insert into ask.client_info(compCode,clientCompNum, clientName, clientCEO, clientstate,clientevent,clientPhone, clientEmail, clientDetail, clientAddress, clientBankName, clientBankNum, clientBankOwner)
+        VALUES (#{compCode},#{clientCompNum},#{clientName},#{clientCEO},#{clientstate},#{clientevent},#{clientPhone},#{clientEmail},#{clientDetail},#{clientAddress},#{clientBankName},#{clientBankNum},#{clientBankOwner})
+    </insert>
+    <!--거래처관리 read-->
+    <select id="clientRead" parameterType="Client_infoDTO" resultType="Client_infoDTO">
+        select * from ask.client_info where compCode = #{compCode};
+    </select>
+    <!--거래처관리 update-->
+    <update id="clientUpdate" parameterType="Client_infoDTO">
+        update ask.client_info set clientName = #{clientName}, clientCEO = #{clientCEO}, clientPhone=#{clientPhone},clientEmail=#{clientEmail},clientstate=#{clientstate},clientevent=#{clientevent},
+        clientBankName = #{clientBankName}, clientBankOwner=#{clientBankOwner} where clientCompNum = #{clientCompNum};
+    </update>
+    <!--거래처관리 delete-->
+    <delete id="clientDelete" parameterType="Client_infoDTO">
+        delete from ask.client_info where clientCompNum = #{clientCompNum};
+    </delete>
+    <!--거래처관리 모달창-->
+    <select id="clientModal" parameterType="Client_infoDTO" resultType="Client_infoDTO">
+        select * from ask.client_info where clientCompNum = #{clientCompNum}
+    </select>
+    <!--매입관리 create-->
+    <insert id="income_Create" parameterType="income_outcomeDTO">
+        insert into ask.purchase_info(purchaseId, p_division, p_date, p_taxType, p_item, p_iCount, p_unitPrice, p_supplyValue, p_surTax, p_totalPrice, p_clientCompNum, p_clientName, compCode,totalsupplyValue,totalsurTax,total) VALUES
+        (#{purchaseId},#{p_division},#{p_date},#{p_taxType},#{p_item},#{p_iCount},#{p_unitPrice},#{p_supplyValue},#{p_surTax},#{p_totalPrice},#{p_clientCompNum},#{p_clientName},#{compCode},#{totalsupplyValue},#{totalsurTax},#{total})
+    </insert>
+    <!--매입 데이터 + 파일 경로 저장-->
+    <insert id="taxfile_create" parameterType="income_outcomeDTO">
+        insert into ask.purchase_info(purchaseId, p_division, p_date, p_taxType, p_item, p_iCount, p_unitPrice, p_supplyValue, p_surTax, p_totalPrice, p_clientCompNum, p_clientName, compCode,totalsupplyValue,totalsurTax,total,taxBill) VALUES
+            (#{purchaseId},#{p_division},#{p_date},#{p_taxType},#{p_item},#{p_iCount},#{p_unitPrice},#{p_supplyValue},#{p_surTax},#{p_totalPrice},#{p_clientCompNum},#{p_clientName},#{compCode},#{totalsupplyValue},#{totalsurTax},#{total},#{taxBill})
+    </insert>
+    <!--매입관리 read-->
+    <select id="income_Read" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select * from ask.purchase_info where compCode = #{compCode};
+    </select>
+    <!--매입관리 상세페이지-->
+    <select id="income_Modal" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select * from ask.purchase_info where purchaseId = #{purchaseId};
+    </select>
+   <!--합계금액 매입-->
+    <select id="income_total" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select sum(p_supplyValue) as totalsupplyValue, sum(p_surTax) as totalsurTax, sum(p_totalPrice) as total from ask.purchase_info where compCode = #{compCode} and p_division = '매입';
+    </select>
+    <!--합계금액 매출-->
+    <select id="income_total1" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select sum(p_supplyValue) as totalsupplyValue, sum(p_surTax) as totalsurTax, sum(p_totalPrice) as total from ask.purchase_info where compCode = #{compCode} and p_division = '매출';
+    </select>
+    <!--매입관리 update--> <!--사업자번호, 거래처명은 수정안해도될거같아서 안넣음-->
+    <update id="income_Update" parameterType="income_outcomeDTO">
+        update ask.purchase_info set p_division = #{p_division}, p_date = #{p_date}, p_taxType = #{p_taxType} , p_item = #{p_item}, p_iCount=#{p_iCount},p_unitPrice=#{p_unitPrice},
+                                     p_supplyValue = #{p_supplyValue}, p_surTax=#{p_surTax},p_totalPrice=#{p_totalPrice}
+        where purchaseId = #{purchaseId};
+    </update>
+    <!--매입관리 delete-->
+    <delete id="income_Delete" parameterType="income_outcomeDTO">
+        delete from ask.purchase_info where purchaseId = #{purchaseId};
+    </delete>
+    <!--ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ매입 검색ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ-->
+    <!--매입 관리 (search) 이름 날짜검색 -->
+    <select id="income_Search" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select * from ask.purchase_info
+        where p_clientName like CONCAT('%',#{p_clientName},'%') and compCode = #{compCode} and p_date between date (#{startDate}) and (#{endDate}) order by p_date desc;
+    </select>
+    <!--매입 관리 (search) 이름 날짜검색  합계금액-->
+    <select id="income_SearchTotal" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select * from ask.purchase_info
+        where p_clientName like CONCAT('%',#{p_clientName},'%') and compCode = #{compCode} and p_date between date (#{startDate}) and (#{endDate}) order by p_date desc;
+    </select>
+    <!--매입검색-->
+    <select id="income_income" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select * from ask.purchase_info
+        where compCode = #{compCode} and p_division = '매입';
+    </select>
+    <!--매입검색 합계금액-->
+    <select id="income_incomeTotal" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select sum(p_supplyValue) as totalsupplyValue, sum(p_surTax) as totalsurTax, sum(p_totalPrice) total from ask.purchase_info
+        where compCode = #{compCode} and p_division = '매입';
+    </select>
+    <!--매출검색-->
+    <select id="income_outcome" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select * from ask.purchase_info
+        where compCode = #{compCode} and p_division = '매출';
+    </select>
+    <!--매출검색 합계금액-->
+    <select id="income_outcomeTotal" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select sum(p_supplyValue) as totalsupplyValue, sum(p_surTax) as totalsurTax, sum(p_totalPrice) total from ask.purchase_info
+        where compCode = #{compCode} and p_division = '매출';
+    </select>
+    <!--매입 관리 (search) 공급처 검색 -->
+    <select id="income_Name" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select * from ask.purchase_info
+        where p_clientName like CONCAT('%',#{p_clientName},'%') and compCode = #{compCode} order by p_date desc;
+    </select>
+    <!--매입관리 공급처 합계금액-->
+    <select id="income_NameTotal" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select sum(p_supplyValue) as totalsupplyValue, sum(p_surTax) as totalsurTax, sum(p_totalPrice) total from ask.purchase_info
+        where p_clientName like CONCAT('%',#{p_clientName},'%') and compCode = #{compCode} order by p_date desc;
+    </select>
+    <!--매입 관리 (search) 날자만 검색 -->
+    <select id="income_Date" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select * from ask.purchase_info
+        where compCode = #{compCode} and p_date between date (#{startDate}) and (#{endDate}+1) order by p_date desc;
+    </select>
+    <!--매입 관리 (search) 날자만 검색 합계금액 -->
+    <select id="income_DateTotal" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select sum(p_supplyValue) as totalsupplyValue, sum(p_surTax) as totalsurTax, sum(p_totalPrice) total from ask.purchase_info
+        where compCode = #{compCode} and p_date between date (#{startDate}) and (#{endDate}+1) order by p_date desc;
+    </select>
+    <!--매입 관리 시작날짜 + 이름 입력-->
+    <select id="income_StartDateName" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select * from ask.purchase_info
+        where p_clientName like CONCAT('%',#{p_clientName},'%') and compCode = #{compCode} and p_date between date (#{startDate}) and (select max(inOutDate) from ask.inOut_info) order by p_date ;
+    </select>
+    <!--매입 관리 시작날짜 + 이름 입력 합계금액-->
+    <select id="income_StartDateNameTotal" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select sum(p_supplyValue) as totalsupplyValue, sum(p_surTax) as totalsurTax, sum(p_totalPrice) total from ask.purchase_info
+        where p_clientName like CONCAT('%',#{p_clientName},'%') and compCode = #{compCode} and p_date between date (#{startDate}) and (select max(inOutDate) from ask.inOut_info) order by p_date ;
+    </select>
+    <!--매입 관리 시작날짜  입력-->
+    <select id="income_StartDate" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select * from ask.purchase_info
+        where  compCode = #{compCode} and p_date between date (#{startDate}) and (select max(inOutDate) from ask.inOut_info) order by p_date ;
+    </select>
+    <!--매입 관리 시작날짜 합계금액-->
+    <select id="income_StartDateTotal" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select sum(p_supplyValue) as totalsupplyValue, sum(p_surTax) as totalsurTax, sum(p_totalPrice) total from ask.purchase_info
+        where  compCode = #{compCode} and p_date between date (#{startDate}) and (select max(inOutDate) from ask.inOut_info) order by p_date ;
+    </select>
+    <!--매입 관리 종료날짜만 입력-->
+    <select id="income_EndDate" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select * from ask.purchase_info
+        where compCode = #{compCode} and p_date between date ((select min(inOutDate) from ask.inOut_info)) and (#{endDate}+1) order by p_date desc;
+    </select>
+    <!--매입 관리 종료날짜만 입력 합계금액-->
+    <select id="income_EndDateTotal" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select sum(p_supplyValue) as totalsupplyValue, sum(p_surTax) as totalsurTax, sum(p_totalPrice) total from ask.purchase_info
+        where compCode = #{compCode} and p_date between date ((select min(inOutDate) from ask.inOut_info)) and (#{endDate}+1) order by p_date desc;
+    </select>
+    <!--매입 종료날짜 + 이름  입력-->
+    <select id="income_EndDateName" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select * from ask.purchase_info
+        where p_clientName like CONCAT('%',#{p_clientName},'%') and compCode = #{compCode} and p_date between date ((select min(inOutDate) from ask.inOut_info)) and (#{endDate}+1) order by p_date desc;
+    </select>
+    <!--매입 종료날짜 + 이름  입력 합계금액-->
+    <select id="income_EndDateNameTotal" parameterType="income_outcomeDTO" resultType="income_outcomeDTO">
+        select sum(p_supplyValue) as totalsupplyValue, sum(p_surTax) as totalsurTax, sum(p_totalPrice) total from ask.purchase_info
+        where p_clientName like CONCAT('%',#{p_clientName},'%') and compCode = #{compCode} and p_date between date ((select min(inOutDate) from ask.inOut_info)) and (#{endDate}+1) order by p_date desc;
+    </select>
+    <!--매입매출 카운트-->
+    <select id="getCount" parameterType="income_outcomeDTO" resultType="int">
+        select count(*) from ask.purchase_info where p_division='매입' and compCode=#{compCode};
+    </select>
+    <!--거래상세페이지-->
+    <select id="clientdetail" parameterType="Client_infoDTO" resultType="income_outcomeDTO">
+        select * from ask.purchase_info where compCode=#{compCode} and p_division = '매출' and p_clientCompNum=#{clientCompNum} and p_date between date (#{startDate}) and (#{endDate}) order by p_date desc;
+    </select>
+    <!--세금계산서 거래내역 내보내기-->
+    <select id="getTransaction" parameterType="int" resultType="TaxPaperDTO">
+        select p_date, p_item,p_iCount, p_unitPrice, p_supplyValue, p_surTax, p_totalPrice from ask.purchase_info where p_division = '매출' and purchaseId =#{purchaseId};
+    </select>
+    <!--세금계산서 거래내역 내보내기-->
+    <select id="getClientInfo" parameterType="int" resultType="String">
+        select p_clientCompNum from ask.purchase_info where p_division = '매출' and purchaseId =#{purchaseId};
+    </select>
+    <!--세금계산서 거래처정보 내보내기1-->
+    <select id="getClientInfo1" parameterType="String" resultType="TaxPaperDTO">
+        select * from ask.client_info where clientCompNum=#{p_clientCompNum};
+    </select>
+    <!--우리회사정보 가져오기-->
+    <select id="getCompanyinfo" parameterType="String" resultType="TaxPaperDTO">
+        select compNum,compName, compCEO, compAddress, compType, compItems, compEmail from ask.company_info where id = #{compCode};
+    </select>
+    <!--세금계산서 합계금액 가져오기 -->
+    <select id="getTotalPay" parameterType="int" resultType="TaxPaperDTO">
+        select sum(p_supplyValue) as TotalsupplyValue, sum(p_surTax) as TotalsurTax, sum(p_totalPrice) as TotalPrice from ask.purchase_info
+        where purchaseId = #{purchaseId} and p_division = '매출';
+    </select>
 </mapper>

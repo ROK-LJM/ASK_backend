@@ -15,4 +15,5 @@ public class CompanyDTO {
     private String compItems;
     private String compEmail;
     private String id;
+    private String lunchTime;
 }

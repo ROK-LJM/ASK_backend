@@ -12,10 +12,12 @@ public class Vact_disposeDTO {
     private String vactStartDate;
     private String vactEndDate;
     private String empName;
+    private String empNum;
     private String depName;
     private int vactPeriod;
     private String vactName;
     private String vactDetail;
     private String vactState;
     private String vactNote;
+
 }

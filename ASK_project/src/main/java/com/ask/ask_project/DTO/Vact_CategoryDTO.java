@@ -12,5 +12,5 @@ public class Vact_CategoryDTO {
     private String vactCode;
     private String vactName;
     private String vactDetail;
-    private String[] deleteVactCode;    //삭제할 휴가항목코드
+
 }

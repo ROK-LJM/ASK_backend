@@ -1,0 +1,8 @@
+cloud:
+  aws:
+    s3:
+      bucket: elasticbeanstalk-ap-northeast-2-299253517068
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false

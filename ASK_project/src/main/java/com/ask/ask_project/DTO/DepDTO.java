@@ -7,6 +7,7 @@ import org.apache.ibatis.type.Alias;
 @Alias("depDTO")
 @Data
 public class DepDTO {
+    private int depId;
     private String compCode;
     private String depCode;
     private String depName;

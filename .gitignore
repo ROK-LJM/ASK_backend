@@ -12,6 +12,10 @@
 .idea/**/사전
 .idea/**/선반
 
+# AWS S3 관련 yml
+application-credentials.yml
+application-aws.yml
+
 # AWS 사용자별
 .idea/**/aws.xml
 

@@ -11,6 +11,6 @@ public class TaxDTO {
     private String taxCode;
     private String taxName;
     private String taxItem;
+    private String taxCalc;
     private String taxNote;
-    private String[] deleteTaxList;
 }
